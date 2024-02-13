@@ -55,6 +55,8 @@ export function ErrorBoundary() {
         message = "Page Not Found";
         break;
     }
+  } else {
+    console.error(error);
   }
 
   return (
