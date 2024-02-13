@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Theme variables
+*/
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -53,13 +56,17 @@
 
     --radius: 0.5rem;
   }
+}
 
+/*
+  Theme switching based on this tweet from Devon Govett
+  https://twitter.com/devongovett/status/1757131288144663027
+*/
+@layer base {
   :root {
     --theme-light: initial;
     --theme-dark: ;
     color-scheme: light dark;
-
-    --radius: 0.5rem;
   }
 
   @media (prefers-color-scheme: dark) {

@@ -4,15 +4,19 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
 } from "@remix-run/react";
 
+import { Header } from "@/components/header";
 import {
   ThemeSwitcherSafeHTML,
   ThemeSwitcherScript,
-} from "@/components/ui/theme-switcher";
+} from "@/components/theme-switcher";
+
 import "./globals.css";
 
-export default function App() {
+function App({ children }: { children: React.ReactNode }) {
   return (
     <ThemeSwitcherSafeHTML lang="en">
       <head>
@@ -23,10 +27,42 @@ export default function App() {
         <ThemeSwitcherScript />
       </head>
       <body>
-        <Outlet />
+        <Header />
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>
     </ThemeSwitcherSafeHTML>
+  );
+}
+
+export default function Root() {
+  return (
+    <App>
+      <Outlet />
+    </App>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  let status = 500;
+  let message = "An unexpected error occurred.";
+  if (isRouteErrorResponse(error)) {
+    switch (error.status) {
+      case 404:
+        status = 404;
+        message = "Page Not Found";
+        break;
+    }
+  }
+
+  return (
+    <App>
+      <div className="container prose py-8">
+        <h1>{status}</h1>
+        <p>{message}</p>
+      </div>
+    </App>
   );
 }

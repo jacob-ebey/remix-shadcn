@@ -1,6 +1,12 @@
-# Welcome to Remix + Vite!
+# Welcome to Remix + Vite + shadcn/ui!
 
 📖 See the [Remix docs](https://remix.run/docs) and the [Remix Vite docs](https://remix.run/docs/en/main/future/vite) for details on supported features.
+
+## Getting Started
+
+```shellscript
+npx create-remix@latest --template jacob-ebey/remix-shadcn
+```
 
 ## Development
 
