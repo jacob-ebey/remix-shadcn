@@ -1,5 +1,5 @@
-function c(light, dark) {
-  return `var(--theme-light, ${light}) var(--theme-dark, ${dark})`;
+function lightDarkVar(baseName) {
+  return `var(--theme-light, hsl(var(--${baseName}))) var(--theme-dark, hsl(var(--${baseName}-dark)))`;
 }
 
 /** @type {import('tailwindcss').Config} */
@@ -22,38 +22,38 @@ module.exports = {
     },
     extend: {
       colors: {
-        border: c("hsl(214.3 31.8% 91.4%)", "hsl(217.2 32.6% 17.5%)"),
-        input: c("hsl(214.3 31.8% 91.4%)", "hsl(217.2 32.6% 17.5%)"),
-        ring: c("hsl(222.2 84% 4.9%)", "hsl(212.7 26.8% 83.9%)"),
-        background: c("hsl(0 0% 100%)", "hsl(222.2 84% 4.9%)"),
-        foreground: c("hsl(222.2 84% 4.9%)", "hsl(210 40% 98%)"),
+        border: lightDarkVar("border"),
+        input: lightDarkVar("input"),
+        ring: lightDarkVar("ring"),
+        background: lightDarkVar("background"),
+        foreground: lightDarkVar("foreground"),
         primary: {
-          DEFAULT: c("hsl(222.2 47.4% 11.2%)", "hsl(210 40% 98%)"),
-          foreground: c("hsl(210 40% 98%)", "hsl(222.2 47.4% 11.2%)"),
+          DEFAULT: lightDarkVar("primary"),
+          foreground: lightDarkVar("primary-foreground"),
         },
         secondary: {
-          DEFAULT: c("hsl(210 40% 96.1%)", "hsl(217.2 32.6% 17.5%)"),
-          foreground: c("hsl(222.2 47.4% 11.2%)", "hsl(210 40% 98%)"),
+          DEFAULT: lightDarkVar("secondary"),
+          foreground: lightDarkVar("secondary-foreground"),
         },
         destructive: {
-          DEFAULT: c("hsl(0 84.2% 60.2%)", "hsl(0 62.8% 30.6%)"),
-          foreground: c("hsl(210 40% 98%)", "hsl(210 40% 98%)"),
+          DEFAULT: lightDarkVar("destructive"),
+          foreground: lightDarkVar("destructive-foreground"),
         },
         muted: {
-          DEFAULT: c("hsl(210 40% 96.1%)", "hsl(217.2 32.6% 17.5%)"),
-          foreground: c("hsl(215.4 16.3% 46.9%)", "hsl(215 20.2% 65.1%)"),
+          DEFAULT: lightDarkVar("muted"),
+          foreground: lightDarkVar("muted-foreground"),
         },
         accent: {
-          DEFAULT: c("hsl(210 40% 96.1%)", "hsl(217.2 32.6% 17.5%)"),
-          foreground: c("hsl(217.2 32.6% 17.5%)", "hsl(210 40% 98%)"),
+          DEFAULT: lightDarkVar("accent"),
+          foreground: lightDarkVar("accent-foreground"),
         },
         popover: {
-          DEFAULT: c("hsl(0 0% 100%)", "hsl(222.2 84% 4.9%)"),
-          foreground: c("hsl(222.2 84% 4.9%)", "hsl(210 40% 98%)"),
+          DEFAULT: lightDarkVar("popover"),
+          foreground: lightDarkVar("popover-foreground"),
         },
         card: {
-          DEFAULT: c("hsl(0 0% 100%)", "hsl(222.2 84% 4.9%)"),
-          foreground: c("hsl(222.2 84% 4.9%)", "hsl(210 40% 98%)"),
+          DEFAULT: lightDarkVar("card"),
+          foreground: lightDarkVar("card-foreground"),
         },
       },
       borderRadius: {
