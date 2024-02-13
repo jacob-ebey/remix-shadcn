@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --theme-light: initial;
+    --theme-dark: ;
+    color-scheme: light dark;
+
+    --radius: 0.5rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --theme-light: ;
+      --theme-dark: initial;
+    }
+  }
+
+  [data-theme="light"] {
+    --theme-light: initial;
+    --theme-dark: ;
+    color-scheme: light;
+  }
+
+  [data-theme="dark"] {
+    --theme-light: ;
+    --theme-dark: initial;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
