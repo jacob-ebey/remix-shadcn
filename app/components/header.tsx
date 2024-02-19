@@ -41,6 +41,7 @@ export function Header() {
 						size="icon"
 						variant="ghost"
 					>
+						<span className="sr-only">Theme selector</span>
 						{!hydrated ? null : theme === "dark" ? (
 							<MoonIcon />
 						) : theme === "light" ? (
@@ -58,6 +59,7 @@ export function Header() {
 							type="button"
 							className="w-full"
 							onClick={() => setTheme("light")}
+							aria-selected={theme === "light"}
 						>
 							Light
 						</button>
@@ -67,6 +69,7 @@ export function Header() {
 							type="button"
 							className="w-full"
 							onClick={() => setTheme("dark")}
+							aria-selected={theme === "dark"}
 						>
 							Dark
 						</button>
@@ -76,6 +79,7 @@ export function Header() {
 							type="button"
 							className="w-full"
 							onClick={() => setTheme("system")}
+							aria-selected={theme === "system"}
 						>
 							System
 						</button>
