@@ -1,0 +1,9 @@
+{
+	"editor.defaultFormatter": "biomejs.biome",
+	"[yaml]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[markdown]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	}
+}
