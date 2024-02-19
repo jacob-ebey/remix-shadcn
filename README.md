@@ -8,6 +8,12 @@
 npx create-remix@latest --template jacob-ebey/remix-shadcn
 ```
 
+Or for a more flushed out template with a login flow and a SQLite database backed by Drizzle ORM:
+
+```shellscript
+npx create-remix@latest --template https://github.com/jacob-ebey/remix-shadcn/tree/drizzle
+```
+
 ## Built in theme swither
 
 ![image](https://github.com/jacob-ebey/remix-shadcn/assets/12063586/c6ed812c-764f-46b7-af30-26284f55535c)
