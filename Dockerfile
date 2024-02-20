@@ -29,6 +29,7 @@ WORKDIR /remixapp
 COPY --from=deps /remixapp/node_modules /remixapp/node_modules
 ADD package.json package-lock.json postcss.config.js tailwind.config.cjs tsconfig.json vite.config.ts ./
 ADD app/ app/
+ADD public/ public/
 
 RUN npm run build
 
@@ -42,5 +43,7 @@ WORKDIR /remixapp
 COPY --from=production-deps /remixapp/node_modules /remixapp/node_modules
 COPY --from=build /remixapp/build /remixapp/build
 COPY --from=build /remixapp/package.json /remixapp/package.json
+
+ADD server.js ./
 
 CMD ["npm", "start"]
