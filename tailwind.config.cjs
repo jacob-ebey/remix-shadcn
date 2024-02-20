@@ -1,5 +1,5 @@
 function lightDarkVar(baseName) {
-	return `var(--theme-light, hsl(var(--${baseName}))) var(--theme-dark, hsl(var(--${baseName}-dark)))`;
+  return `var(--theme-light, hsl(var(--${baseName}))) var(--theme-dark, hsl(var(--${baseName}-dark)))`;
 }
 
 /** @type {import('tailwindcss').Config} */
