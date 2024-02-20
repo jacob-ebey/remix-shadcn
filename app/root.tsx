@@ -9,6 +9,7 @@ import {
 } from "@remix-run/react";
 
 import { Header } from "@/components/header";
+import { PendingIndicator } from "@/components/pending-indicator";
 import {
 	ThemeSwitcherSafeHTML,
 	ThemeSwitcherScript,
@@ -27,6 +28,7 @@ function App({ children }: { children: React.ReactNode }) {
 				<ThemeSwitcherScript />
 			</head>
 			<body>
+				<PendingIndicator />
 				<Header />
 				{children}
 				<ScrollRestoration />
