@@ -49,9 +49,9 @@ export function ErrorBoundary() {
 	let status = 500;
 	let message = "An unexpected error occurred.";
 	if (isRouteErrorResponse(error)) {
+		status = error.status;
 		switch (error.status) {
 			case 404:
-				status = 404;
 				message = "Page Not Found";
 				break;
 		}
