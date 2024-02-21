@@ -8,7 +8,7 @@ import {
 	useRouteError,
 } from "@remix-run/react";
 
-import { PendingIndicator } from "@/components/pending-indicator";
+import { GlobalPendingIndicator } from "@/components/global-pending-indicator";
 import {
 	ThemeSwitcherSafeHTML,
 	ThemeSwitcherScript,
@@ -27,7 +27,7 @@ function App({ children }: { children: React.ReactNode }) {
 				<ThemeSwitcherScript />
 			</head>
 			<body>
-				<PendingIndicator />
+				<GlobalPendingIndicator />
 				{children}
 				<ScrollRestoration />
 				<Scripts />
