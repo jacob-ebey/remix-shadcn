@@ -8,8 +8,8 @@ import {
 	useRouteError,
 } from "@remix-run/react";
 
-import { Header } from "@/components/header";
 import { GlobalPendingIndicator } from "@/components/global-pending-indicator";
+import { Header } from "@/components/header";
 import {
 	ThemeSwitcherSafeHTML,
 	ThemeSwitcherScript,
