@@ -9,6 +9,7 @@ import {
 } from "@remix-run/react";
 
 import { GlobalPendingIndicator } from "@/components/global-pending-indicator";
+import { Header } from "@/components/header";
 import {
 	ThemeSwitcherSafeHTML,
 	ThemeSwitcherScript,
