@@ -2,7 +2,7 @@ import { useNavigation } from "@remix-run/react";
 
 import { cn } from "@/lib/styles";
 
-export function PendingIndicator() {
+export function GlobalPendingIndicator() {
 	const navigation = useNavigation();
 	const pending = navigation.state !== "idle";
 
