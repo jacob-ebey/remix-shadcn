@@ -4,6 +4,7 @@ kill_timeout = 5
 processes = []
 
 [env]
+DB_PATH = "/data"
 PORT = "3000"
 
 [mounts]

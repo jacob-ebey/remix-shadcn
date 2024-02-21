@@ -6,6 +6,10 @@ import { RemixServer } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 
+import dbSchema from "@/db.server/schema";
+
+export { dbSchema };
+
 const ABORT_DELAY = 5_000;
 
 export default function handleRequest(

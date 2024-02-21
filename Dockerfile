@@ -36,8 +36,6 @@ RUN npm run build
 # Finally, build the production image with minimal footprint
 FROM base
 
-ENV PORT 3000
-
 WORKDIR /remixapp
 
 COPY --from=production-deps /remixapp/node_modules /remixapp/node_modules
@@ -45,5 +43,6 @@ COPY --from=build /remixapp/build /remixapp/build
 COPY --from=build /remixapp/package.json /remixapp/package.json
 
 ADD server.js ./
+ADD drizzle/ drizzle/
 
 CMD ["npm", "start"]

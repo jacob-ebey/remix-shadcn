@@ -47,6 +47,7 @@ npm run build
 Setup your environment:
 
 ```sh
+DB_PATH='/data' # a persistent volume
 NODE_ENV='production'
 ```
 
