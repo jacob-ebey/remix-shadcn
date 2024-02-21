@@ -1,8 +1,16 @@
 import { AppLoadContext } from "@remix-run/cloudflare";
+import { drizzle } from "drizzle-orm/d1";
 
-// biome-ignore lint/suspicious/noEmptyInterface: Fill this in with your own types for your use-case
-export interface Env {}
+import schema from "./app/db.server/schema";
+
+export interface Env {
+	DB: D1Database;
+	SESSION_SECRET: string;
+}
 
 export function getLoadContext(env: Env): AppLoadContext {
-	return {};
+	return {
+		DB: drizzle(env.DB, { schema }),
+		SESSION_SECRET: env.SESSION_SECRET,
+	};
 }

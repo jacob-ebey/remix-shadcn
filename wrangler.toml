@@ -1,0 +1,7 @@
+[[d1_databases]]
+binding = "DB"
+database_name = "DB"
+database_id = "d8456069-36b3-4a61-a60b-5e9b0d34f5fc"
+
+[vars]
+SESSION_SECRET = 's3cr3t'

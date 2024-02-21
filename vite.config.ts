@@ -8,7 +8,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 import type { Env } from "./context";
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
 	plugins: [
 		envOnly(),
 		tsconfigPaths(),
@@ -29,5 +29,26 @@ export default defineConfig({
 				v3_throwAbortReason: true,
 			},
 		}),
+		{
+			name: "ssr-entries",
+			config(userConfig, { isSsrBuild }) {
+				if (isSsrBuild) {
+					const userInput = userConfig.build?.rollupOptions?.input;
+					if (typeof userInput !== "string")
+						throw new Error("Invalid base input");
+
+					return {
+						...userConfig,
+						build: {
+							...userConfig.build,
+							rollupOptions: {
+								...userConfig.build?.rollupOptions,
+								input: [userInput, "./app/db.server/schema.ts"],
+							},
+						},
+					};
+				}
+			},
+		},
 	],
-});
+}));

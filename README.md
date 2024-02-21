@@ -43,3 +43,11 @@ In the Cloudflare Dashboard:
 - Create a new Cloudflare Pages application
 - Set the `Build command` to `npm run build`
 - Set the `Build output directory` to `/build/client`
+- Set the environment variable `SESSION_SECRET` to an super duper secret and strong value
+- Deploy the app (it will be in a broken state, that's fine)
+- Create or or link an existing D1 database to the app as `DB`
+
+In your project:
+
+- Update your wrangler.toml `database_id` to the ID of the linked D1 database you used above
+- Commit and push to deploy your application
