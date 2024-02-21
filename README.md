@@ -22,7 +22,7 @@ Cloudflare Pages:
 npx create-remix@latest --template https://github.com/jacob-ebey/remix-shadcn/tree/drizzle-cloudflare
 ```
 
-## Built in theme swither
+## Built in theme switcher
 
 ![image](https://github.com/jacob-ebey/remix-shadcn/assets/12063586/c6ed812c-764f-46b7-af30-26284f55535c)
 
