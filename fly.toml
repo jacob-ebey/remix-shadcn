@@ -3,8 +3,14 @@ kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
 
+[env]
+PORT = "3000"
+
+[mounts]
+source = "remix_shadcn_data"
+destination = "/data"
+
 [[services]]
-# This is set to the PORT env variable in the Dockerfile
 internal_port = 3000
 processes = ["app"]
 protocol = "tcp"
