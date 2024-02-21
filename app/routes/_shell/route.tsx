@@ -19,10 +19,10 @@ function Layout({ children }: { children: React.ReactNode }) {
 		useRouteLoaderData<typeof loader>("routes/_shell") ?? {};
 
 	return (
-		<>
+		<div className="h-lvh flex flex-col min-h-0">
 			<Header isAuthenticated={isAuthenticated} />
 			{children}
-		</>
+		</div>
 	);
 }
 
