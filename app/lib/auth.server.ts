@@ -19,7 +19,7 @@ export function getAuthenticator(context: AppLoadContext) {
 			if (!parsed.success) throw new Error(parsed.error.message);
 
 			const user = await getUserByLogin(context, parsed.data);
-			if (!user) throw new PublicError("Invalid email or password (1)");
+			if (!user) throw new PublicError("Invalid email or password", 401);
 
 			return { id: user.id };
 		}),

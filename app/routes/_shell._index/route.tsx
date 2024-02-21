@@ -90,12 +90,15 @@ export async function action({ context, request }: ActionFunctionArgs) {
 						},
 					);
 				} catch (reason) {
-					if (reason && reason instanceof Response) {
+					if (
+						reason &&
+						(reason instanceof Response || reason instanceof PublicError)
+					) {
 						throw reason;
 					}
 
 					console.error(reason);
-					throw new PublicError("Invalid email or password (2)", 401);
+					throw new PublicError("Invalid email or password", 401);
 				}
 			},
 			{

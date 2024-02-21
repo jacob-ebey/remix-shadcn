@@ -75,7 +75,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
 				const createdUser = await createUser(context, data);
 				if (!createdUser) {
-					throw new PublicError("Invalid email or password (3)", 400);
+					throw new PublicError("Invalid email or password", 401);
 				}
 
 				const headers = new Headers(request.headers);
@@ -103,7 +103,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
 					}
 
 					console.error(reason);
-					throw new PublicError("Invalid email or password (4)", 400);
+					throw new PublicError("Invalid email or password", 401);
 				}
 			},
 			{
