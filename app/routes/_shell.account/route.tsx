@@ -1,10 +1,16 @@
 import { getFormProps, getInputProps } from "@conform-to/react";
+import { ArchiveIcon } from "@radix-ui/react-icons";
 import type {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
 	MetaFunction,
 } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import {
+	Form,
+	useActionData,
+	useLoaderData,
+	useNavigation,
+} from "@remix-run/react";
 
 import { title } from "@/config.shared";
 import { formIntent } from "@/lib/forms.server";
@@ -56,12 +62,21 @@ export async function action({ context, request }: ActionFunctionArgs) {
 }
 
 export default function Account() {
+	const navigation = useNavigation();
 	const { account: loaderAccount } = useLoaderData<typeof loader>();
 	const { updateAccount } = useActionData<typeof action>() ?? {};
 
 	const account = updateAccount?.lastReturn ?? loaderAccount;
 
-	const [accountForm, accountFields] = useUpdateAccountForm(updateAccount);
+	const saving =
+		navigation.state === "submitting" &&
+		navigation.formData?.get("intent") === Intents.UpdateAccount;
+
+	const formDisabled = saving;
+
+	const [accountForm, accountFields] = useUpdateAccountForm(updateAccount, {
+		disabled: formDisabled,
+	});
 
 	return (
 		<main className="container py-8 md:py-16 lg:py-32">
@@ -119,8 +134,19 @@ export default function Account() {
 					</CardContent>
 					<CardFooter>
 						<div className="space-y-2 flex-1">
-							<Button className="w-full block" type="submit">
-								Save
+							<Button
+								className="w-full block"
+								type="submit"
+								disabled={formDisabled}
+							>
+								{saving ? (
+									<span className="inline-flex items-center">
+										Saving{" "}
+										<ArchiveIcon className="text-primary-foreground ml-2" />
+									</span>
+								) : (
+									"Save"
+								)}
 							</Button>
 							{accountForm.dirty && (
 								<div className="text-sm text-muted-foreground">

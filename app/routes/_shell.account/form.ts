@@ -15,11 +15,20 @@ export const updateAccountFormSchema = zfd.formData({
 		.min(1, "Full name is required"),
 });
 
-export function useUpdateAccountForm(lastResult: unknown) {
+export function useUpdateAccountForm(
+	lastResult: unknown,
+	{ disabled }: { disabled?: boolean } = {},
+) {
 	return useForm(updateAccountFormSchema, {
 		id: "account-form",
 		lastResult: lastResult as SubmissionResult<string[]> | null | undefined,
 		shouldRevalidate: "onBlur",
 		shouldValidate: "onSubmit",
+		onSubmit(event) {
+			if (disabled) {
+				event.preventDefault();
+				return;
+			}
+		},
 	});
 }
