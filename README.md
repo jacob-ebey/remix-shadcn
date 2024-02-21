@@ -4,8 +4,16 @@
 
 ## Getting Started
 
+Node Server:
+
 ```sh
 npx create-remix@latest --template jacob-ebey/remix-shadcn
+```
+
+Cloudflare Pages:
+
+```shellscript
+npx create-remix@latest --template https://github.com/jacob-ebey/remix-shadcn/tree/cloudflare
 ```
 
 Or for a more flushed out template with a login flow and a SQLite database backed by Drizzle ORM:
