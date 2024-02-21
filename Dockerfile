@@ -43,6 +43,6 @@ COPY --from=build /remixapp/build /remixapp/build
 COPY --from=build /remixapp/package.json /remixapp/package.json
 
 ADD server.js ./
-ADD drizzle/ drizzle/
+ADD migrations/ migrations/
 
 CMD ["npm", "start"]
