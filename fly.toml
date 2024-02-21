@@ -32,7 +32,7 @@ timeout = "2s"
 
 [[services.http_checks]]
 grace_period = "5s"
-headers = {  }
+headers = {}
 interval = 10_000
 method = "get"
 path = "/healthcheck"

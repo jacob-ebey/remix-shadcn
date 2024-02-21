@@ -4,7 +4,7 @@
 
 ## Getting Started
 
-```shellscript
+```sh
 npx create-remix@latest --template jacob-ebey/remix-shadcn
 ```
 
@@ -32,7 +32,7 @@ npx create-remix@latest --template https://github.com/jacob-ebey/remix-shadcn/tr
 
 Run the Vite dev server:
 
-```shellscript
+```sh
 npm run dev
 ```
 
@@ -42,6 +42,12 @@ First, build your app for production:
 
 ```sh
 npm run build
+```
+
+Setup your environment:
+
+```sh
+NODE_ENV='production'
 ```
 
 Then run the app in production mode:
@@ -56,7 +62,10 @@ Now you'll need to pick a host to deploy it to.
 
 If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
 
-Make sure to deploy the output of `npm run build`
+Make sure to deploy the output of `npm run build` and the server
 
+- `server.js`
 - `build/server`
 - `build/client`
+
+Take a look at the provided Dockerfile for further details on how to configure a production environment.
