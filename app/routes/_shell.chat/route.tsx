@@ -1,75 +1,20 @@
 import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { createCookie } from "@remix-run/cloudflare";
+import { Outlet, useLoaderData } from "@remix-run/react";
 import * as cookie from "cookie";
 import * as React from "react";
-import { ClientOnly } from "remix-utils/client-only";
 
-import type { Message, UserData } from "@/components/chat";
-import { ChatList, ChatTopBar } from "@/components/chat";
-import { Sidebar } from "@/components/sidebar";
 import {
 	ResizableHandle,
 	ResizablePanel,
 	ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { requireUser } from "@/lib/auth.server";
+import { getChatsByUserId } from "@/lib/chats.server";
 import { cn } from "@/lib/styles";
-import { useLoaderData } from "@remix-run/react";
 
-const users: UserData[] = [
-	{
-		avatar: "https://placehold.co/400",
-		id: "1",
-		name: "John Doe",
-	},
-	{
-		avatar: "https://placehold.co/400",
-		id: "2",
-		name: "Jane Doe",
-	},
-	{
-		avatar: "https://placehold.co/400",
-		id: "3",
-		name: "John Smith",
-	},
-	{
-		avatar: "https://placehold.co/400",
-		id: "4",
-		name: "Jane Smith",
-	},
-];
+import { Sidebar } from "./sidebar";
 
-const messages: Message[] = [
-	{
-		avatar: "https://placehold.co/400",
-		id: 1,
-		message: "Hey, how are you?",
-		name: "John Doe",
-	},
-	{
-		avatar: "https://placehold.co/400",
-		id: 2,
-		message: "I'm good, thank you.",
-		name: "Jane Doe",
-	},
-	{
-		avatar: "https://placehold.co/400",
-		id: 3,
-		message: "What are you doing?",
-		name: "John Doe",
-	},
-	{
-		avatar: "https://placehold.co/400",
-		id: 4,
-		message: "I'm just chilling.",
-		name: "Jane Doe",
-	},
-];
-
-export async function loader({ context, request }: LoaderFunctionArgs) {
-	await requireUser(context, request);
-
-	const cookieHeader = request.headers.get("Cookie");
+async function readLayoutCookie(cookieHeader: string | null) {
 	const cookies = cookieHeader ? await cookie.parse(cookieHeader) : null;
 	const defaultCollapsed =
 		cookies?.["react-resizable-panels:collapsed"] === "true";
@@ -80,11 +25,23 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
 	return { defaultLayout, defaultCollapsed };
 }
 
+export async function loader({ context, request }: LoaderFunctionArgs) {
+	const user = await requireUser(context, request);
+
+	const [chats, { defaultCollapsed, defaultLayout }] = await Promise.all([
+		getChatsByUserId(context, user.id),
+		readLayoutCookie(request.headers.get("Cookie")),
+	]);
+
+	return { chats, defaultCollapsed, defaultLayout };
+}
+
 export default function Chat() {
-	const { defaultCollapsed, defaultLayout } = useLoaderData<typeof loader>();
+	const { chats, defaultCollapsed, defaultLayout } =
+		useLoaderData<typeof loader>();
 
 	const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
-	const [isMobile, setIsMobile] = React.useState(false);
+	const [isMobile, setIsMobile] = React.useState(defaultCollapsed);
 
 	React.useEffect(() => {
 		const checkScreenWidth = () => {
@@ -136,24 +93,11 @@ export default function Chat() {
 						"min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out",
 				)}
 			>
-				<Sidebar
-					isCollapsed={isCollapsed || isMobile}
-					links={users}
-					isMobile={isMobile}
-				/>
+				<Sidebar isCollapsed={isCollapsed || isMobile} chats={chats} />
 			</ResizablePanel>
 			<ResizableHandle withHandle />
 			<ResizablePanel defaultSize={defaultLayout?.[1]} minSize={30}>
-				<div className="flex flex-col justify-between w-full h-full">
-					<ChatTopBar selectedUser={users[0]} />
-
-					<ChatList
-						messages={messages}
-						selectedUser={users[0]}
-						isMobile={isMobile}
-						loggedInUserData={users[0]}
-					/>
-				</div>
+				<Outlet />
 			</ResizablePanel>
 		</ResizablePanelGroup>
 	);

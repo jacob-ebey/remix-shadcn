@@ -21,4 +21,24 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 );
 Textarea.displayName = "Textarea";
 
-export { Textarea };
+function useAutoHeightTextArea() {
+	const ref = React.useRef<HTMLTextAreaElement>(null);
+
+	const adjustHeight = () => {
+		const textbox = ref.current;
+		if (!textbox) return;
+		textbox.style.height = "inherit";
+		textbox.style.height = `${textbox.scrollHeight}px`;
+	};
+
+	React.useEffect(adjustHeight, []);
+
+	return {
+		ref,
+		onInput() {
+			adjustHeight();
+		},
+	};
+}
+
+export { Textarea, useAutoHeightTextArea };

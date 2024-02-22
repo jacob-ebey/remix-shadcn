@@ -5,11 +5,13 @@ import {
 	Scripts,
 	ScrollRestoration,
 	isRouteErrorResponse,
+	useNavigate,
 	useRouteError,
 } from "@remix-run/react";
+import * as React from "react";
+import { RouterProvider } from "react-aria-components";
 
 import { GlobalPendingIndicator } from "@/components/global-pending-indicator";
-import { Header } from "@/components/header";
 import {
 	ThemeSwitcherSafeHTML,
 	ThemeSwitcherScript,
@@ -17,23 +19,30 @@ import {
 
 import "./globals.css";
 
+function NavProvider({ children }: { children: React.ReactNode }) {
+	const navigate = useNavigate();
+	return <RouterProvider navigate={navigate}>{children}</RouterProvider>;
+}
+
 function App({ children }: { children: React.ReactNode }) {
 	return (
-		<ThemeSwitcherSafeHTML lang="en">
-			<head>
-				<meta charSet="utf-8" />
-				<meta name="viewport" content="width=device-width, initial-scale=1" />
-				<Meta />
-				<Links />
-				<ThemeSwitcherScript />
-			</head>
-			<body>
-				<GlobalPendingIndicator />
-				{children}
-				<ScrollRestoration />
-				<Scripts />
-			</body>
-		</ThemeSwitcherSafeHTML>
+		<NavProvider>
+			<ThemeSwitcherSafeHTML lang="en">
+				<head>
+					<meta charSet="utf-8" />
+					<meta name="viewport" content="width=device-width, initial-scale=1" />
+					<Meta />
+					<Links />
+					<ThemeSwitcherScript />
+				</head>
+				<body>
+					<GlobalPendingIndicator />
+					{children}
+					<ScrollRestoration />
+					<Scripts />
+				</body>
+			</ThemeSwitcherSafeHTML>
+		</NavProvider>
 	);
 }
 
