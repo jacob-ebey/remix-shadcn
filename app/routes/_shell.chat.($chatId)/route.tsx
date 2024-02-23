@@ -134,6 +134,7 @@ export default function Chat() {
 
 			<div className="w-full overflow-y-auto overflow-x-hidden h-full flex flex-col">
 				<div
+					id="messages"
 					ref={messagesRef}
 					className="w-full overflow-y-auto overflow-x-hidden h-full flex flex-col"
 				>

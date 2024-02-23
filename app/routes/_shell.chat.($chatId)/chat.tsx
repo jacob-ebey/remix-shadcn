@@ -234,6 +234,13 @@ export function StreamingBotMessage({
 export function StreamingText({ next }: { next: Promise<RecursivePromise> }) {
 	const { next: nextNext, value } = React.use(next);
 
+	React.useEffect(() => {
+		const messages = document.getElementById("messages");
+		if (messages) {
+			messages.scrollTop = messages.scrollHeight;
+		}
+	}, []);
+
 	return (
 		<>
 			{value || ""}
