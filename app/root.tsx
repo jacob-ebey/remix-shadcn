@@ -34,16 +34,6 @@ function App({ children }: { children: React.ReactNode }) {
 					<Meta />
 					<Links />
 					<ThemeSwitcherScript />
-					<script
-						// biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-						dangerouslySetInnerHTML={{
-							__html: `
-								if ("virtualKeyboard" in navigator) {
-									navigator.virtualKeyboard.overlaysContent = true;
-								}
-							`,
-						}}
-					/>
 				</head>
 				<body>
 					<GlobalPendingIndicator />
