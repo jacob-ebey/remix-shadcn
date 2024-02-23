@@ -23,7 +23,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 	return (
 		<div
 			data-collapsed={isCollapsed}
-			className="relative group flex flex-col h-full gap-4 p-2 data-[collapsed=true]:p-2"
+			className="relative group flex flex-col h-full gap-4 px-2 data-[collapsed=true]:p-0"
 		>
 			{!isCollapsed && (
 				<div className="flex justify-between p-2 items-center">
@@ -33,7 +33,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 					</div>
 				</div>
 			)}
-			<nav className="overflow-y-auto">
+			<nav className="overflow-y-auto md:py-2">
 				<ListBox
 					selectionMode="single"
 					className="grid gap-1 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]"
