@@ -200,7 +200,6 @@ export function ChatBottomBar({ chatId }: { chatId: string | undefined }) {
 				<Textarea
 					{...autoHeightTextArea}
 					key={chatId}
-					autoFocus={!!chatId}
 					autoComplete="off"
 					onKeyDown={handleKeyPress}
 					name="message"
