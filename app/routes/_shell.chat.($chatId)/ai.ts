@@ -61,11 +61,11 @@ export function createConversationChain(
 
 	return RunnableSequence.from<{ question: string }, BaseMessageChunk>([
 		{
-			// standalone_question: RunnableBranch.from([
-			// 	[(input) => chat_history.length > 0, standaloneQuestionChain],
-			// 	(input) => input.question,
-			// ]),
-			standalone_question: (input) => input.question,
+			standalone_question: RunnableBranch.from([
+				[(input) => chat_history.length > 0, standaloneQuestionChain],
+				(input) => input.question,
+			]),
+			// standalone_question: (input) => input.question,
 			chat_history: (input) => chat_history,
 		},
 		answerChain,

@@ -1,7 +1,7 @@
 import type { SubmissionResult } from "@conform-to/react";
 import { parse } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { json } from "@remix-run/cloudflare";
+import { json } from "@remix-run/react";
 import type { ZodTypeAny, output } from "zod";
 
 export class PublicError extends Error {
@@ -103,6 +103,14 @@ class FormIntent<
 
 		try {
 			const lastReturn = await intent.action(lastResult.value);
+
+			if (
+				lastReturn &&
+				typeof lastReturn === "object" &&
+				lastReturn instanceof Response
+			) {
+				throw lastReturn;
+			}
 
 			Object.assign(results, {
 				[formIntent]: {

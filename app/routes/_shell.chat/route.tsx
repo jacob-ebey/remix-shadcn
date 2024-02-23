@@ -1,4 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import type { ShouldRevalidateFunctionArgs } from "@remix-run/react";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import * as cookie from "cookie";
 import * as React from "react";
@@ -36,7 +37,17 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
 	return { chats, defaultCollapsed, defaultLayout };
 }
 
-export default function Chat() {
+export function shouldRevalidate({
+	defaultShouldRevalidate,
+	currentParams,
+	nextParams,
+}: ShouldRevalidateFunctionArgs) {
+	if (!currentParams.userId && nextParams.userId) return true;
+
+	return defaultShouldRevalidate;
+}
+
+export default function ChatLayout() {
 	const { chats, defaultCollapsed, defaultLayout } =
 		useLoaderData<typeof loader>();
 

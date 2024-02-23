@@ -1,5 +1,5 @@
 import { GearIcon, PaperPlaneIcon, Pencil1Icon } from "@radix-ui/react-icons";
-import { Form, Link } from "@remix-run/react";
+import { Form, Link, useFetcher, useNavigate } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
 
@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea, useAutoHeightTextArea } from "@/components/ui/textarea";
 import { cn } from "@/lib/styles";
 
+import { RecursivePromise } from "../api.chat.($chatId)/client";
 import { Intents } from "./form";
 
 export interface Message {
@@ -104,22 +105,10 @@ export function AnimatedMessages({ children }: { children: React.ReactNode }) {
 		// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 		<AnimatePresence key={i}>
 			<motion.div
-				layout
-				initial={{ opacity: 0, scale: 1, y: 50, x: 0 }}
-				animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-				exit={{ opacity: 0, scale: 1, y: 1, x: 0 }}
-				transition={{
-					opacity: { duration: 0.1 },
-					layout: {
-						type: "spring",
-						bounce: 0.3,
-						duration: i * 0.05 + 0.2,
-					},
-				}}
-				style={{
-					originX: 0.5,
-					originY: 0.5,
-				}}
+				layoutScroll
+				initial={{ opacity: 0, y: 100 }}
+				animate={{ opacity: 1, y: 0 }}
+				exit={{ opacity: 0, transition: { duration: 0.15 } }}
 			>
 				{child}
 			</motion.div>
@@ -145,7 +134,7 @@ export function ChatMessage({
 				position === "right" ? "items-end" : "items-start",
 			)}
 		>
-			<div className="flex gap-3 items-center">
+			<div className="flex gap-3 items-end">
 				{position === "left" && (
 					<Avatar className="flex justify-center items-center">
 						<AvatarImage src={avatar} alt={sender} width={6} height={6} />
@@ -170,6 +159,8 @@ export function ChatMessage({
 }
 
 export function ChatBottomBar({ chatId }: { chatId: string | undefined }) {
+	const fetcher = useFetcher({ key: "send-message" });
+
 	const autoHeightTextArea = useAutoHeightTextArea();
 
 	const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -199,7 +190,7 @@ export function ChatBottomBar({ chatId }: { chatId: string | undefined }) {
 	};
 
 	return (
-		<Form
+		<fetcher.Form
 			method="POST"
 			className="p-2 flex justify-between w-full items-center gap-2"
 		>
@@ -221,6 +212,37 @@ export function ChatBottomBar({ chatId }: { chatId: string | undefined }) {
 			<Button type="submit" variant="ghost" size="icon" className="h-9 w-9">
 				<PaperPlaneIcon className="text-muted-foreground" />
 			</Button>
-		</Form>
+		</fetcher.Form>
+	);
+}
+
+export function StreamingBotMessage({
+	avatar,
+	next,
+}: {
+	avatar: string;
+	next: Promise<RecursivePromise>;
+}) {
+	return (
+		<ChatMessage avatar={avatar} position="left" sender="AI">
+			<React.Suspense fallback="...">
+				<StreamingText next={next} />
+			</React.Suspense>
+		</ChatMessage>
+	);
+}
+
+export function StreamingText({ next }: { next: Promise<RecursivePromise> }) {
+	const { next: nextNext, value } = React.use(next);
+
+	return (
+		<>
+			{value || ""}
+			{nextNext && (
+				<React.Suspense fallback="...">
+					<StreamingText next={nextNext} />
+				</React.Suspense>
+			)}
+		</>
 	);
 }

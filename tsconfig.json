@@ -2,7 +2,7 @@
   "include": ["**/*.ts", "**/*.tsx", "server.js"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["@remix-run/cloudflare", "node", "vite/client"],
+    "types": ["@remix-run/cloudflare", "node", "react/canary", "vite/client"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",

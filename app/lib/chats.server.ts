@@ -52,6 +52,7 @@ export async function getChatsByUserId(
 ): Promise<ChatSummary[]> {
 	const chats = await DB.query.chat.findMany({
 		where: eq(chat.userId, userId),
+		orderBy: desc(chat.createdAt),
 		columns: {
 			id: true,
 			name: true,
@@ -181,4 +182,22 @@ export async function addMessage(
 		message: addedMessage.message,
 		sender: user ? user.displayName : "AI",
 	};
+}
+
+export async function updateMessage(
+	context: AppLoadContext,
+	messageId: string,
+	message: string,
+) {
+	const updated = await context.DB.update(chatMessage)
+		.set({ message })
+		.where(eq(chatMessage.id, messageId));
+	return updated.success;
+}
+
+export async function deleteMessage({ DB }: AppLoadContext, messageId: string) {
+	const deleted = await DB.delete(chatMessage).where(
+		eq(chatMessage.id, messageId),
+	);
+	return deleted.success;
 }

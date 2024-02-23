@@ -1,6 +1,7 @@
 import { ChatCloudflareWorkersAI } from "@langchain/cloudflare";
 import { AppLoadContext } from "@remix-run/cloudflare";
 import { drizzle } from "drizzle-orm/d1";
+import "langsmith";
 
 import schema from "./app/db.server/schema";
 
@@ -16,7 +17,8 @@ export function getLoadContext(env: Env): AppLoadContext {
 		AI: new ChatCloudflareWorkersAI({
 			cloudflareAccountId: env.CLOUDFLARE_ACCOUNT_ID,
 			cloudflareApiToken: env.CLOUDFLARE_WORKERS_AI_API_TOKEN,
-			model: "@cf/meta/llama-2-7b-chat-fp16",
+			// model: "@cf/meta/llama-2-7b-chat-fp16",
+			model: "@hf/thebloke/llama-2-13b-chat-awq",
 		}),
 		DB: drizzle(env.DB, { schema }),
 		SESSION_SECRET: env.SESSION_SECRET,

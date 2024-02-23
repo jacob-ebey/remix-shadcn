@@ -12,6 +12,10 @@
 		"start": "wrangler pages dev ./build/client",
 		"typecheck": "tsc"
 	},
+	"overrides": {
+		"react": "18.3.0-canary-47beb96cc-20240222",
+		"react-dom": "18.3.0-canary-47beb96cc-20240222"
+	},
 	"dependencies": {
 		"@conform-to/dom": "1.0.1",
 		"@conform-to/react": "1.0.1",
@@ -40,9 +44,10 @@
 		"drizzle-orm": "0.29.3",
 		"framer-motion": "11.0.5",
 		"isbot": "5.1.0",
-		"react": "18.2.0",
+		"langsmith": "0.1.5",
+		"react": "18.3.0-canary-47beb96cc-20240222",
 		"react-aria-components": "1.1.1",
-		"react-dom": "18.2.0",
+		"react-dom": "18.3.0-canary-47beb96cc-20240222",
 		"react-resizable-panels": "2.0.9",
 		"remix-auth": "3.6.0",
 		"remix-auth-form": "1.4.0",
