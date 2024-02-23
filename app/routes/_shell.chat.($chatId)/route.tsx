@@ -22,7 +22,7 @@ import {
 import { PublicError, formIntent } from "@/lib/forms.server";
 
 import { sendMessage } from "../api.chat.($chatId)/client";
-import { createConversationChain } from "./ai";
+import { DEFAULT_SYSTEM_PROMPT, createConversationChain } from "./ai";
 import {
 	AnimatedMessages,
 	ChatBottomBar,
@@ -57,7 +57,7 @@ export async function action({
 		.intent(Intents.SendMessage, sendMessageFormSchema, async ({ message }) => {
 			let chat = chatId ? await getChat(context, user.id, chatId) : null;
 
-			const prompt = chat?.settings.prompt || "";
+			const prompt = chat?.settings.prompt || DEFAULT_SYSTEM_PROMPT;
 
 			const history = chat?.messages.map<["ai" | "human", string]>(
 				({ message, sender }) => [sender ? "human" : "ai", message],

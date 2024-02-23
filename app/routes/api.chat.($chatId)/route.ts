@@ -11,7 +11,10 @@ import {
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms.server";
 
-import { createConversationChain } from "@/routes/_shell.chat.($chatId)/ai";
+import {
+	DEFAULT_SYSTEM_PROMPT,
+	createConversationChain,
+} from "@/routes/_shell.chat.($chatId)/ai";
 import {
 	Intents,
 	sendMessageFormSchema,
@@ -30,7 +33,7 @@ export async function action({
 		.intent(Intents.SendMessage, sendMessageFormSchema, async ({ message }) => {
 			let chat = chatId ? await getChat(context, user.id, chatId) : null;
 
-			const prompt = chat?.settings.prompt || "";
+			const prompt = chat?.settings.prompt || DEFAULT_SYSTEM_PROMPT;
 
 			const history = chat?.messages.map<["ai" | "human", string]>(
 				({ message, sender }) => [sender ? "human" : "ai", message],

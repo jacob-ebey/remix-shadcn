@@ -8,6 +8,9 @@ import {
 import { RunnableBranch, RunnableSequence } from "@langchain/core/runnables";
 import type { AppLoadContext } from "@remix-run/cloudflare";
 
+export const DEFAULT_SYSTEM_PROMPT =
+	"You are a helpful AI assistant targeted at industry professionals with their research and analysis.";
+
 const CONDENSE_QUESTION_SYSTEM_TEMPLATE = `You are an experienced researcher, expert at interpreting and answering questions based on provided sources.
 Your job is to remove references to chat history from incoming questions, rephrasing them as standalone questions.`;
 
