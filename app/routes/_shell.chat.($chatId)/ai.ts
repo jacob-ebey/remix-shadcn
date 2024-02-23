@@ -46,7 +46,7 @@ export function createConversationChain(
 		["system", systemPrompt],
 		// Adding chat history as part of the final answer generation is distracting for a small model like Llama 2-7B.
 		// If using a more powerful model, you can re-enable to better support meta-questions about the conversation.
-		new MessagesPlaceholder("chat_history"),
+		// new MessagesPlaceholder("chat_history"),
 		["human", "{standalone_question}"],
 	]);
 
