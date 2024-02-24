@@ -111,7 +111,6 @@ export async function action({
 					"Transfer-Encoding": "chunked",
 					"X-Ai-Message-Id": createdAiMessage.id,
 					"X-Chat-Id": chat.id,
-					"X-Sent-Message": message,
 					"X-Sent-Message-Id": sentMessageId,
 					"X-Redirect": chatId ? "" : `/chat/${chat.id}`,
 				},

@@ -12,9 +12,9 @@ export async function sendMessage(
 		throw new Error("No response body");
 	}
 
+	const sentMessage = String(formData.get("message"));
 	const aiMessageId = response.headers.get("X-Ai-Message-Id");
 	const newChatId = response.headers.get("X-Chat-Id");
-	const sentMessage = response.headers.get("X-Sent-Message");
 	const sentMessageId = response.headers.get("X-Sent-Message-Id");
 	const redirectTo = response.headers.get("X-Redirect") || "";
 
