@@ -1,14 +1,11 @@
 import { ChatBubbleIcon, GearIcon } from "@radix-ui/react-icons";
 import { useParams } from "@remix-run/react";
 import { ListBox, ListBoxItem } from "react-aria-components";
-import { createPortal } from "react-dom";
-import { useHydrated } from "remix-utils/use-hydrated";
 
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ChatSummary } from "@/lib/chats.server";
@@ -24,9 +21,9 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 	return (
 		<div
 			data-collapsed={isCollapsed}
-			className="relative group @container flex flex-col h-full p-0 @[120px]:p-4 min-w-[9vw] max-w-[90vw] md:max-w-[30vw] group-[[data-collapsed=true]]:hidden md:group-[[data-collapsed=true]]:flex"
+			className="relative group @container flex flex-col h-full p-0 @[120px]:p-4 max-w-[90vw] md:max-w-[30vw] group-[[data-collapsed=true]]:hidden md:group-[[data-collapsed=true]]:flex"
 		>
-			<div className="sr-only flex @[120px]:not-sr-only justify-between @[120px]:p-2 items-center">
+			<div className="sr-only flex @[120px]:not-sr-only justify-between @[120px]:p-4 items-center">
 				<div className="flex gap-2 items-center text-2xl">
 					<p className="font-medium">Chats</p>
 					<span className="text-foreground">({chats.length})</span>

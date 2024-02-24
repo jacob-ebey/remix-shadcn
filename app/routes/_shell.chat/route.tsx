@@ -14,6 +14,7 @@ import { getChatsByUserId } from "@/lib/chats.server";
 import { cn } from "@/lib/styles";
 
 import { Sidebar } from "./sidebar";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 async function readLayoutCookie(cookieHeader: string | null) {
 	const cookies = cookieHeader ? await cookie.parse(cookieHeader) : null;
@@ -50,6 +51,7 @@ export function shouldRevalidate({
 export default function ChatLayout() {
 	const { chats, defaultCollapsed, defaultLayout } =
 		useLoaderData<typeof loader>();
+	const hydrated = useHydrated();
 
 	const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
 	const [isMobile, setIsMobile] = React.useState(defaultCollapsed);
@@ -82,10 +84,10 @@ export default function ChatLayout() {
 			className="h-full items-stretch"
 		>
 			<ResizablePanel
-				defaultSize={defaultLayout?.[0] ?? 20}
-				collapsedSize={isMobile ? 0 : 4}
+				defaultSize={defaultLayout?.[0] ?? 16}
+				collapsedSize={isMobile ? 0 : 8}
 				collapsible={true}
-				minSize={isMobile ? 4 : 24}
+				minSize={16}
 				maxSize={isMobile ? 90 : 30}
 				onCollapse={() => {
 					setIsCollapsed(true);
@@ -104,7 +106,7 @@ export default function ChatLayout() {
 				<Sidebar isCollapsed={isCollapsed} chats={chats} />
 			</ResizablePanel>
 			<ResizableHandle withHandle />
-			<ResizablePanel defaultSize={defaultLayout?.[1]} minSize={10}>
+			<ResizablePanel defaultSize={defaultLayout?.[1] ?? 80} minSize={10}>
 				<Outlet />
 			</ResizablePanel>
 		</ResizablePanelGroup>
