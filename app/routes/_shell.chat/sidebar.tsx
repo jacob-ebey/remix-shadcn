@@ -2,15 +2,8 @@ import { ChatBubbleIcon, GearIcon } from "@radix-ui/react-icons";
 import { useParams } from "@remix-run/react";
 import { ListBox, ListBoxItem } from "react-aria-components";
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import { ChatSummary } from "@/lib/chats.server";
-import { cn } from "@/lib/styles";
 
 interface SidebarProps {
 	chats: ChatSummary[];
@@ -23,15 +16,15 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 	return (
 		<div
 			data-collapsed={isCollapsed}
-			className="relative @container flex flex-col h-full p-0 @[110px]:p-4"
+			className="relative group @container flex flex-col h-full p-0 @[110px]:p-4 max-w-[70vw] md:max-w-[30vw] data-[collapsed=true]:w-0"
 		>
-			<div className="sr-only flex @[110px]:not-sr-only justify-between @[110px]:p-2 items-center">
+			<div className="sr-only flex @[110px]:not-sr-only justify-between @[110px]:p-2 items-center group-[[data-collapsed=true]]:hidden">
 				<div className="flex gap-2 items-center text-2xl">
 					<p className="font-medium">Chats</p>
 					<span className="text-foreground">({chats.length})</span>
 				</div>
 			</div>
-			<nav className="overflow-y-auto flex-1 py-2 @[110px]:p-0">
+			<nav className="overflow-y-auto flex-1 py-2 @[110px]:p-0  group-[[data-collapsed=true]]:hidden">
 				<ListBox
 					selectionMode="single"
 					className="grid gap-1 justify-center @[110px]:justify-start"
@@ -71,7 +64,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 					))}
 				</ListBox>
 			</nav>
-			<nav className="overflow-y-auto py-2 border-t border-border">
+			<nav className="overflow-y-auto py-2 border-t border-border group-[[data-collapsed=true]]:hidden">
 				<ListBox
 					selectionMode="single"
 					className="grid gap-1 justify-center @[110px]:justify-start"
@@ -84,7 +77,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 						asChild
 						className="justify-center @[110px]:justify-start gap-4 py-2 flex h-auto min-w-0 w-full px-2 @[110px]:px-8 @[110px]:rounded-none"
 					>
-						<ListBoxItem href="/chats/settings">
+						<ListBoxItem href="/chats/settings" textValue="Settings">
 							<GearIcon
 								className="min-w-6 min-h-6 w-6 h-6"
 								width={6}
