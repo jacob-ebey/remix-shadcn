@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { title } from "@/config.shared";
 import { Intents } from "@/intents";
 import { requireUser } from "@/lib/auth.server";
-import { formIntent } from "@/lib/forms.server";
+import { formIntent } from "@/lib/forms";
 import { getUserById, updateUser } from "@/lib/user.server";
 
 import { updateAccountFormSchema, useUpdateAccountForm } from "./form";
@@ -71,9 +71,12 @@ export default function Account() {
 
 	const formDisabled = saving;
 
-	const [accountForm, accountFields] = useUpdateAccountForm(updateAccount, {
-		disabled: formDisabled,
-	});
+	const [accountForm, accountFields] = useUpdateAccountForm(
+		updateAccount?.lastResult,
+		{
+			disabled: formDisabled,
+		},
+	);
 
 	return (
 		<main className="container py-8 md:py-16 lg:py-32">

@@ -30,7 +30,7 @@ import { DEFAULT_SUCCESS_REDIRECT, title } from "@/config.shared";
 import { Intents } from "@/intents";
 import { loginFormSchema } from "@/lib/auth";
 import { getAuthenticator } from "@/lib/auth.server";
-import { PublicError, formIntent } from "@/lib/forms.server";
+import { PublicError, formIntent } from "@/lib/forms";
 import { validateRedirect } from "@/lib/redirects";
 
 import { useLoginForm } from "./form";

@@ -3,6 +3,7 @@ import type { ShouldRevalidateFunctionArgs } from "@remix-run/react";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import * as cookie from "cookie";
 import * as React from "react";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import {
 	ResizableHandle,
@@ -14,7 +15,6 @@ import { getChatsByUserId } from "@/lib/chats.server";
 import { cn } from "@/lib/styles";
 
 import { Sidebar } from "./sidebar";
-import { useHydrated } from "remix-utils/use-hydrated";
 
 async function readLayoutCookie(cookieHeader: string | null) {
 	const cookies = cookieHeader ? await cookie.parse(cookieHeader) : null;

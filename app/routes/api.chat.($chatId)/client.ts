@@ -1,7 +1,10 @@
+import { Intents } from "@/intents";
+
 export async function sendMessage(
 	chatId: string | undefined,
 	formData: FormData,
 ) {
+	formData.set("intent", Intents.SendMessage);
 	const response = await fetch(`/api/chat/${chatId || ""}`, {
 		method: "POST",
 		body: formData,

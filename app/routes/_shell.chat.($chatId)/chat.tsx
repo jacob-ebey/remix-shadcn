@@ -1,3 +1,4 @@
+import { getFormProps, getTextareaProps } from "@conform-to/react";
 import {
 	GearIcon,
 	MagicWandIcon,
@@ -5,7 +6,7 @@ import {
 	Pencil1Icon,
 	PersonIcon,
 } from "@radix-ui/react-icons";
-import { Link, useFetcher } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
 
@@ -25,6 +26,8 @@ import { Intents } from "@/intents";
 import { cn } from "@/lib/styles";
 
 import { RecursivePromise } from "../api.chat.($chatId)/client";
+import { DEFAULT_SYSTEM_PROMPT } from "./ai";
+import { useChatSettingsForm } from "./form";
 
 export interface Message {
 	id: number;
@@ -42,7 +45,28 @@ export interface UserData {
 export function ChatTopBar({
 	chatId,
 	chatName,
-}: { chatId: string | undefined; chatName: string | undefined }) {
+	systemPrompt,
+}: {
+	chatId: string | undefined;
+	chatName: string | undefined;
+	systemPrompt: string | undefined;
+}) {
+	const autoHeightTextArea = useAutoHeightTextArea();
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	const loaderData = useLoaderData<any>();
+	const saveSettingsFetcher = useFetcher({
+		key: `updated-chat-settings-${chatId || ""}`,
+	});
+
+	const savingSettings =
+		saveSettingsFetcher.state !== "idle" &&
+		saveSettingsFetcher.formData?.get("intent") === Intents.UpdateChatSettings;
+
+	const [updateChatSettingsForm, updateChatSettingsFields] =
+		useChatSettingsForm(loaderData?.[Intents.UpdateChatSettings]?.lastResult, {
+			disabled: savingSettings,
+		});
+
 	return (
 		<div className="w-full flex py-2 px-4 md:p-4 justify-between items-center border-b">
 			<div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0">
@@ -70,14 +94,41 @@ export function ChatTopBar({
 								Make changes that apply to only this chat.
 							</DialogDescription>
 						</DialogHeader>
-						<div>
+						<saveSettingsFetcher.Form
+							{...getFormProps(updateChatSettingsForm)}
+							method="POST"
+						>
+							<input
+								type="hidden"
+								name="intent"
+								value={Intents.UpdateChatSettings}
+							/>
 							<div className="space-y-2">
-								<Label htmlFor="username">Prompt</Label>
-								<Textarea id="username" defaultValue="" />
+								<Label htmlFor={updateChatSettingsFields.prompt.id}>
+									System Prompt
+								</Label>
+								<Textarea
+									{...getTextareaProps(updateChatSettingsFields.prompt)}
+									{...autoHeightTextArea}
+									defaultValue={systemPrompt}
+								/>
+								<div
+									id={updateChatSettingsFields.prompt.descriptionId}
+									className="text-sm text-destructive"
+								>
+									{updateChatSettingsFields.prompt.errors ||
+										updateChatSettingsFields.global.errors}
+								</div>
 							</div>
-						</div>
+						</saveSettingsFetcher.Form>
 						<DialogFooter>
-							<Button type="submit">Save changes</Button>
+							<Button
+								form={updateChatSettingsForm.id}
+								type="submit"
+								disabled={savingSettings}
+							>
+								Save changes
+							</Button>
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
@@ -144,7 +195,10 @@ export function ChatMessage({
 	);
 }
 
-export function ChatBottomBar({ chatId }: { chatId: string | undefined }) {
+export function ChatBottomBar({
+	chatId,
+	prompt,
+}: { chatId: string | undefined; prompt: string | undefined }) {
 	const fetcher = useFetcher({ key: "send-message" });
 
 	const autoHeightTextArea = useAutoHeightTextArea();
@@ -182,6 +236,11 @@ export function ChatBottomBar({ chatId }: { chatId: string | undefined }) {
 			className="p-2 flex justify-between w-full items-center gap-2"
 		>
 			<input type="hidden" name="intent" value={Intents.SendMessage} />
+			<input
+				type="hidden"
+				name="prompt"
+				value={prompt !== DEFAULT_SYSTEM_PROMPT ? prompt : ""}
+			/>
 
 			<div className="w-full relative">
 				<Textarea

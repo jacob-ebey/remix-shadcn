@@ -4,9 +4,9 @@ import { FormStrategy } from "remix-auth-form";
 
 import { DEFAULT_FAILURE_REDIRECT } from "@/config.shared";
 import { type AuthorizedUser, loginFormSchema } from "@/lib/auth";
+import { PublicError } from "@/lib/forms";
 import { getCookieSessionStorage } from "@/lib/session.server";
 import { getUserByLogin } from "@/lib/user.server";
-import { PublicError } from "./forms.server";
 
 export function getAuthenticator(context: AppLoadContext) {
 	const authenticator = new Authenticator<AuthorizedUser>(

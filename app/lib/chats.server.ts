@@ -1,7 +1,7 @@
 import { AppLoadContext } from "@remix-run/cloudflare";
 import { and, asc, desc, eq } from "drizzle-orm";
 
-import { chat, chatMessage } from "@/db.server/schema";
+import { chat, chatMessage, chatSettings } from "@/db.server/schema";
 import { getUserById } from "@/lib/user.server";
 
 export interface ChatSummary {
@@ -21,9 +21,13 @@ export async function clearChats({ DB }: AppLoadContext, userId: string) {
 export async function createChat(
 	context: AppLoadContext,
 	userId: string,
-	data: { message: string; name?: string | null },
+	{
+		message,
+		name: inputName,
+		prompt,
+	}: { message: string; name?: string | null; prompt?: string },
 ): Promise<Chat | null> {
-	const name = data.name || data.message.slice(36);
+	const name = inputName || message.slice(36);
 
 	const newChats = await context.DB.insert(chat)
 		.values({
@@ -37,10 +41,18 @@ export async function createChat(
 	try {
 		const newMessage = await context.DB.insert(chatMessage).values({
 			chatId: newChat.id,
-			message: data.message,
+			message: message,
 			userId,
 		});
 		if (!newMessage.success) throw new Error("Could not create message");
+
+		if (prompt) {
+			const newSettings = await context.DB.insert(chatSettings).values({
+				chatId: newChat.id,
+				prompt,
+			});
+			if (!newSettings.success) throw new Error("Could not create settings");
+		}
 	} catch (error) {
 		try {
 			await context.DB.delete(chat).where(eq(chat.id, newChat.id));
@@ -160,6 +172,50 @@ export async function getChat(
 			prompt: found.settings?.prompt || "You are a helpful AI assistant.",
 		},
 	};
+}
+
+export async function updateChatSettings(
+	{ DB }: AppLoadContext,
+	userId: string,
+	chatId: string,
+	{ prompt }: { prompt?: string },
+) {
+	const ownedChat = await DB.query.chat.findFirst({
+		where: and(eq(chat.id, chatId), eq(chat.userId, userId)),
+		columns: {
+			id: true,
+		},
+	});
+	if (!ownedChat) return null;
+
+	const existingSettings = await DB.query.chatSettings.findFirst({
+		where: eq(chatSettings.chatId, chatId),
+		columns: {
+			prompt: true,
+		},
+	});
+
+	if (existingSettings) {
+		const updated = await DB.update(chatSettings)
+			.set({ prompt: prompt || null })
+			.where(eq(chatSettings.chatId, chatId))
+			.returning({
+				prompt: chatSettings.prompt,
+			});
+		const updatedSettings = updated[0];
+		return updatedSettings || null;
+	}
+
+	const inserted = await DB.insert(chatSettings)
+		.values({
+			chatId,
+			prompt: prompt || null,
+		})
+		.returning({
+			prompt: chatSettings.prompt,
+		});
+	const insertedSettings = inserted[0];
+	return insertedSettings || null;
 }
 
 export async function addMessage(

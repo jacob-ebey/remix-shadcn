@@ -1,6 +1,7 @@
 import type {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
+	SerializeFrom,
 } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
 import {
@@ -16,13 +17,15 @@ import { z } from "zod";
 import { Intents } from "@/intents";
 import { requireUser } from "@/lib/auth.server";
 import {
+	type ChatMessage as Message,
+	ChatSettings,
 	addMessage,
 	clearChats,
 	createChat,
 	getChat,
-	type ChatMessage as Message,
+	updateChatSettings,
 } from "@/lib/chats.server";
-import { PublicError, formIntent } from "@/lib/forms.server";
+import { PublicError, formIntent } from "@/lib/forms";
 
 import { sendMessage } from "../api.chat.($chatId)/client";
 import { DEFAULT_SYSTEM_PROMPT, createConversationChain } from "./ai";
@@ -33,7 +36,7 @@ import {
 	ChatTopBar,
 	StreamingBotMessage,
 } from "./chat";
-import { sendMessageFormSchema } from "./form";
+import { sendMessageFormSchema, updateChatSettingsFormSchema } from "./form";
 
 export async function loader({
 	context,
@@ -60,45 +63,59 @@ export async function action({
 		.intent(Intents.ClearChats, z.any(), async () => {
 			await clearChats(context, user.id);
 		})
-		.intent(Intents.SendMessage, sendMessageFormSchema, async ({ message }) => {
-			let chat = chatId ? await getChat(context, user.id, chatId) : null;
+		.intent(
+			Intents.UpdateChatSettings,
+			updateChatSettingsFormSchema,
+			async ({ prompt }) => {
+				if (!chatId) throw new Error("Chat ID is required");
+				return await updateChatSettings(context, user.id, chatId, { prompt });
+			},
+		)
+		.intent(
+			Intents.SendMessage,
+			sendMessageFormSchema,
+			async ({ prompt: formPrompt, message }) => {
+				let chat = chatId ? await getChat(context, user.id, chatId) : null;
 
-			const prompt = chat?.settings.prompt || DEFAULT_SYSTEM_PROMPT;
+				const prompt =
+					formPrompt || chat?.settings.prompt || DEFAULT_SYSTEM_PROMPT;
 
-			const history = chat?.messages.map<["ai" | "human", string]>(
-				({ message, sender }) => [sender ? "human" : "ai", message],
-			);
+				const history = chat?.messages.map<["ai" | "human", string]>(
+					({ message, sender }) => [sender ? "human" : "ai", message],
+				);
 
-			const conversation = createConversationChain(
-				context,
-				prompt,
-				history ?? [],
-			);
-			const aiResponse = await conversation.invoke({ question: message });
-			const aiMessage = aiResponse.content.toString().trim();
+				const conversation = createConversationChain(
+					context,
+					prompt,
+					history ?? [],
+				);
+				const aiResponse = await conversation.invoke({ question: message });
+				const aiMessage = aiResponse.content.toString().trim();
 
-			if (!chat) {
-				chat = await createChat(context, user.id, {
-					message: message,
-					name: message.slice(0, 36) + (message.length > 36 ? "..." : ""),
-				});
 				if (!chat) {
-					throw new PublicError(
-						history ? "Could not send message" : "Could not create chat",
-					);
+					chat = await createChat(context, user.id, {
+						message: message,
+						name: message.slice(0, 36) + (message.length > 36 ? "..." : ""),
+						prompt: formPrompt,
+					});
+					if (!chat) {
+						throw new PublicError(
+							history ? "Could not send message" : "Could not create chat",
+						);
+					}
+				} else {
+					await addMessage(context, chat.id, message, user.id);
 				}
-			} else {
-				await addMessage(context, chat.id, message, user.id);
-			}
 
-			await addMessage(context, chat.id, aiMessage);
+				await addMessage(context, chat.id, aiMessage);
 
-			if (!chatId) {
-				throw redirect(`/chat/${chat.id}`);
-			}
+				if (!chatId) {
+					throw redirect(`/chat/${chat.id}`);
+				}
 
-			return null;
-		})
+				return null;
+			},
+		)
 		.run();
 }
 
@@ -108,16 +125,25 @@ export async function clientAction({
 	serverAction,
 }: ClientActionFunctionArgs) {
 	const formData = await request.clone().formData();
-	if (formData.get("intent") === Intents.SendMessage) {
+
+	if (!chatId && formData.get("intent") === Intents.UpdateChatSettings) {
 		return {
-			sendMessage: {
-				lastResult: undefined,
-				lastReturn: await sendMessage(chatId, formData),
+			[Intents.UpdateChatSettings]: {
+				lastResult: {},
+				lastReturn: {
+					prompt: String(formData.get("prompt")),
+				},
 			},
 		};
 	}
 
-	return serverAction<typeof action>();
+	const result = await formIntent(formData)
+		.intent(Intents.SendMessage, sendMessageFormSchema, async () => {
+			return await sendMessage(chatId, formData);
+		})
+		.run(true);
+
+	return result || serverAction<typeof action>();
 }
 
 export default function Chat() {
@@ -125,6 +151,16 @@ export default function Chat() {
 	const messagesRef = React.useRef<HTMLDivElement>(null);
 
 	const messages = usePendingMessages(chat?.id, chat?.messages || []);
+	const updatedSettingsFetcher = useFetcher<typeof clientAction>({
+		key: `updated-chat-settings-${chat?.id || ""}`,
+	});
+	const prompt =
+		(
+			updatedSettingsFetcher.data?.updateChatSettings
+				?.lastReturn as ChatSettings
+		)?.prompt ||
+		chat?.settings.prompt ||
+		DEFAULT_SYSTEM_PROMPT;
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	React.useEffect(() => {
@@ -135,7 +171,11 @@ export default function Chat() {
 
 	return (
 		<div className="flex flex-col justify-between w-full h-full min-w-[84vw] sm:min-w-fit">
-			<ChatTopBar chatId={chat?.id} chatName={chat?.name} />
+			<ChatTopBar
+				chatId={chat?.id}
+				chatName={chat?.name}
+				systemPrompt={prompt}
+			/>
 			<SuccessRevalidator />
 
 			<div className="w-full overflow-y-auto overflow-x-hidden h-full flex flex-col">
@@ -167,7 +207,7 @@ export default function Chat() {
 						)}
 					</AnimatedMessages>
 				</div>
-				<ChatBottomBar chatId={chat?.id} />
+				<ChatBottomBar chatId={chat?.id} prompt={prompt} />
 			</div>
 		</div>
 	);

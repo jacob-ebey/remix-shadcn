@@ -8,8 +8,8 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ChatSummary } from "@/lib/chats.server";
 import { Intents } from "@/intents";
+import { ChatSummary } from "@/lib/chats.server";
 
 interface SidebarProps {
 	chats: ChatSummary[];

@@ -3,5 +3,6 @@ export enum Intents {
 	SendMessage = "sendMessage",
 	Login = "login",
 	UpdateAccount = "updateAccount",
+	UpdateChatSettings = "updateChatSettings",
 	Signup = "signup",
 }
