@@ -1,8 +1,16 @@
 import { ChatBubbleIcon, GearIcon } from "@radix-ui/react-icons";
 import { useParams } from "@remix-run/react";
 import { ListBox, ListBoxItem } from "react-aria-components";
+import { createPortal } from "react-dom";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ChatSummary } from "@/lib/chats.server";
 
 interface SidebarProps {
@@ -16,18 +24,18 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 	return (
 		<div
 			data-collapsed={isCollapsed}
-			className="relative group @container flex flex-col h-full p-0 @[110px]:p-4 max-w-[70vw] md:max-w-[30vw] data-[collapsed=true]:w-0"
+			className="relative group @container flex flex-col h-full p-0 @[120px]:p-4 min-w-[9vw] max-w-[90vw] md:max-w-[30vw] group-[[data-collapsed=true]]:hidden md:group-[[data-collapsed=true]]:flex"
 		>
-			<div className="sr-only flex @[110px]:not-sr-only justify-between @[110px]:p-2 items-center group-[[data-collapsed=true]]:hidden">
+			<div className="sr-only flex @[120px]:not-sr-only justify-between @[120px]:p-2 items-center">
 				<div className="flex gap-2 items-center text-2xl">
 					<p className="font-medium">Chats</p>
 					<span className="text-foreground">({chats.length})</span>
 				</div>
 			</div>
-			<nav className="overflow-y-auto flex-1 py-2 @[110px]:p-0  group-[[data-collapsed=true]]:hidden">
+			<nav className="overflow-y-auto flex-1 py-2 @[120px]:p-0">
 				<ListBox
 					selectionMode="single"
-					className="grid gap-1 justify-center @[110px]:justify-start"
+					className="grid gap-1 justify-center @[120px]:justify-start"
 					aria-label="Chats"
 					selectedKeys={chatId ? [chatId] : []}
 					key={chats.length}
@@ -38,7 +46,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 							size="lg"
 							variant="ghost"
 							asChild
-							className="justify-center @[110px]:justify-start gap-4 py-2 flex h-auto min-w-0 w-full px-2 @[110px]:px-8 @[110px]:rounded-none"
+							className="justify-center @[120px]:justify-start gap-4 px-2 py-2 flex h-auto min-w-0 w-full @[120px]:px-8 @[120px]:rounded-none"
 						>
 							<ListBoxItem
 								id={chat.id}
@@ -49,8 +57,17 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 										: "No messages"
 								}`}
 							>
-								<ChatBubbleIcon className="min-w-6 min-h-6 w-6 h-6" />
-								<div className="flex-1 flex sr-only flex-col min-w-0 @[110px]:not-sr-only">
+								{isCollapsed ? (
+									<Tooltip delayDuration={0}>
+										<TooltipTrigger asChild>
+											<ChatBubbleIcon className="min-w-6 min-h-6 w-6 h-6" />
+										</TooltipTrigger>
+										<TooltipContent side="right">{chat.name}</TooltipContent>
+									</Tooltip>
+								) : (
+									<ChatBubbleIcon className="min-w-6 min-h-6 w-6 h-6" />
+								)}
+								<div className="flex-1 flex sr-only flex-col min-w-0 @[120px]:not-sr-only">
 									<span className="truncate">{chat.name}</span>
 									{chat.lastMessage && (
 										<span className="text-muted-foreground text-xs truncate">
@@ -64,10 +81,10 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 					))}
 				</ListBox>
 			</nav>
-			<nav className="overflow-y-auto py-2 border-t border-border group-[[data-collapsed=true]]:hidden">
+			<nav className="overflow-y-auto py-2 border-t border-border">
 				<ListBox
 					selectionMode="single"
-					className="grid gap-1 justify-center @[110px]:justify-start"
+					className="grid gap-1 justify-center @[120px]:justify-start"
 					aria-label="Admin"
 					selectedKeys={chatId ? [chatId] : []}
 				>
@@ -75,7 +92,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 						size="lg"
 						variant="ghost"
 						asChild
-						className="justify-center @[110px]:justify-start gap-4 py-2 flex h-auto min-w-0 w-full px-2 @[110px]:px-8 @[110px]:rounded-none"
+						className="justify-center @[120px]:justify-start gap-4 py-2 flex h-auto min-w-0 w-full px-2 @[120px]:px-8 @[120px]:rounded-none"
 					>
 						<ListBoxItem href="/chats/settings" textValue="Settings">
 							<GearIcon
@@ -83,7 +100,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 								width={6}
 								height={6}
 							/>
-							<div className="flex-1 flex sr-only flex-col min-w-0 @[110px]:not-sr-only">
+							<div className="flex-1 flex sr-only flex-col min-w-0 @[120px]:not-sr-only">
 								<span className="truncate">Settings</span>
 							</div>
 						</ListBoxItem>

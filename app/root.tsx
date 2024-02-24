@@ -17,7 +17,8 @@ import {
 	ThemeSwitcherScript,
 } from "@/components/theme-switcher";
 
-import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import "@/globals.css";
 
 function NavProvider({ children }: { children: React.ReactNode }) {
 	const navigate = useNavigate();
@@ -40,7 +41,7 @@ function App({ children }: { children: React.ReactNode }) {
 				</head>
 				<body>
 					<GlobalPendingIndicator />
-					{children}
+					<TooltipProvider>{children}</TooltipProvider>
 					<ScrollRestoration />
 					<Scripts />
 				</body>
