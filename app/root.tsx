@@ -28,7 +28,7 @@ function NavProvider({ children }: { children: React.ReactNode }) {
 function App({ children }: { children: React.ReactNode }) {
 	return (
 		<NavProvider>
-			<ThemeSwitcherSafeHTML lang="en" className="touch-manipulation">
+			<ThemeSwitcherSafeHTML lang="en" className="touch-manipulation overflow-x-hidden">
 				<head>
 					<meta charSet="utf-8" />
 					<meta

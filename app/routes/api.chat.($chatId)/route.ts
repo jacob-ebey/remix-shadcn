@@ -15,10 +15,8 @@ import {
 	DEFAULT_SYSTEM_PROMPT,
 	createConversationChain,
 } from "@/routes/_shell.chat.($chatId)/ai";
-import {
-	Intents,
-	sendMessageFormSchema,
-} from "@/routes/_shell.chat.($chatId)/form";
+import { sendMessageFormSchema } from "@/routes/_shell.chat.($chatId)/form";
+import { Intents } from "@/intents";
 
 export async function action({
 	context,

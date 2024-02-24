@@ -11,13 +11,16 @@ import {
 	useRevalidator,
 } from "@remix-run/react";
 import * as React from "react";
+import { z } from "zod";
 
+import { Intents } from "@/intents";
 import { requireUser } from "@/lib/auth.server";
 import {
-	type ChatMessage as Message,
 	addMessage,
+	clearChats,
 	createChat,
 	getChat,
+	type ChatMessage as Message,
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms.server";
 
@@ -30,7 +33,7 @@ import {
 	ChatTopBar,
 	StreamingBotMessage,
 } from "./chat";
-import { Intents, sendMessageFormSchema } from "./form";
+import { sendMessageFormSchema } from "./form";
 
 export async function loader({
 	context,
@@ -54,6 +57,9 @@ export async function action({
 	const formData = await request.formData();
 
 	return formIntent(formData)
+		.intent(Intents.ClearChats, z.any(), async () => {
+			await clearChats(context, user.id);
+		})
 		.intent(Intents.SendMessage, sendMessageFormSchema, async ({ message }) => {
 			let chat = chatId ? await getChat(context, user.id, chatId) : null;
 
@@ -101,7 +107,7 @@ export async function clientAction({
 	request,
 	serverAction,
 }: ClientActionFunctionArgs) {
-	const formData = await request.formData();
+	const formData = await request.clone().formData();
 	if (formData.get("intent") === Intents.SendMessage) {
 		return {
 			sendMessage: {
@@ -128,7 +134,7 @@ export default function Chat() {
 	}, [messages]);
 
 	return (
-		<div className="flex flex-col justify-between w-full h-full">
+		<div className="flex flex-col justify-between w-full h-full min-w-[84vw] sm:min-w-fit">
 			<ChatTopBar chatId={chat?.id} chatName={chat?.name} />
 			<SuccessRevalidator />
 

@@ -18,7 +18,7 @@ export const password = sqliteTable("password", {
 	id: stringId("id"),
 	userId: text("userId")
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: "cascade" }),
 	password: text("password").notNull(),
 	createdAt: createdAt(),
 });
@@ -36,7 +36,7 @@ export const chat = sqliteTable("chat", {
 	createdAt: createdAt(),
 	userId: text("userId")
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: "cascade" }),
 });
 
 const chatRelations = relations(chat, ({ many, one }) => ({
@@ -53,7 +53,7 @@ export const chatMessage = sqliteTable("chat_message", {
 	createdAt: createdAt(),
 	chatId: text("chatId")
 		.notNull()
-		.references(() => chat.id),
+		.references(() => chat.id, { onDelete: "cascade" }),
 	userId: text("userId").references(() => user.id),
 });
 
@@ -61,7 +61,7 @@ export const chatSettings = sqliteTable("chat_settings", {
 	id: stringId("id"),
 	chatId: text("chatId")
 		.notNull()
-		.references(() => chat.id),
+		.references(() => chat.id, { onDelete: "cascade" }),
 	prompt: text("prompt"),
 });
 

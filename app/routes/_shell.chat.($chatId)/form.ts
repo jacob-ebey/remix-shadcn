@@ -4,10 +4,6 @@ import { zfd } from "zod-form-data";
 
 import { useForm } from "@/lib/forms";
 
-export enum Intents {
-	SendMessage = "sendMessage",
-}
-
 export const sendMessageFormSchema = zfd.formData({
 	message: z
 		.string({ required_error: "Display name is required" })

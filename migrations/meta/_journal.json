@@ -1,13 +1,13 @@
 {
-	"version": "5",
-	"dialect": "sqlite",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "5",
-			"when": 1708583329627,
-			"tag": "0000_colossal_agent_brand",
-			"breakpoints": true
-		}
-	]
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1708765213581,
+      "tag": "0000_bizarre_lethal_legion",
+      "breakpoints": true
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 import { AppLoadContext } from "@remix-run/cloudflare";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 
 import { chat, chatMessage } from "@/db.server/schema";
 import { getUserById } from "@/lib/user.server";
@@ -11,6 +11,11 @@ export interface ChatSummary {
 		message: string;
 		sender: string;
 	};
+}
+
+export async function clearChats({ DB }: AppLoadContext, userId: string) {
+	const result = await DB.delete(chat).where(eq(chat.userId, userId));
+	return result.success;
 }
 
 export async function createChat(

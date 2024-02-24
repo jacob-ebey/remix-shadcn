@@ -21,10 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea, useAutoHeightTextArea } from "@/components/ui/textarea";
+import { Intents } from "@/intents";
 import { cn } from "@/lib/styles";
 
 import { RecursivePromise } from "../api.chat.($chatId)/client";
-import { Intents } from "./form";
 
 export interface Message {
 	id: number;
@@ -47,8 +47,8 @@ export function ChatTopBar({
 		<div className="w-full flex py-2 px-4 md:p-4 justify-between items-center border-b">
 			<div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0">
 				{chatId && <MagicWandIcon className="h-4 w-4" />}
-				<div className="flex-1">
-					<div className="font-medium whitespace-nowrap">
+				<div className="flex-1 min-w-0">
+					<div className="font-medium whitespace-nowrap truncate">
 						{chatId ? chatName : "New Chat"}
 					</div>
 					{/* <span className="text-xs whitespace-nowrap">Active 2 mins ago</span> */}
@@ -60,7 +60,7 @@ export function ChatTopBar({
 					<DialogTrigger asChild>
 						<Button type="button" size="icon" variant="ghost">
 							<span className="sr-only">Chat settings</span>
-							<GearIcon />
+							<GearIcon className="w-6 h-6" />
 						</Button>
 					</DialogTrigger>
 					<DialogContent className="sm:max-w-[425px]">
@@ -83,8 +83,8 @@ export function ChatTopBar({
 				</Dialog>
 
 				<Button asChild size="icon" variant="ghost">
-					<Link to="/chat" className="h-4 w-4">
-						<Pencil1Icon />
+					<Link to="/chat">
+						<Pencil1Icon className="w-6 h-6" />
 					</Link>
 				</Button>
 			</div>
@@ -127,9 +127,7 @@ export function ChatMessage({
 			)}
 		>
 			<div className="flex gap-3 items-end">
-				{position === "left" && (
-					<MagicWandIcon width={6} height={6} className="w-4 h-4 min-w-4" />
-				)}
+				{position === "left" && <MagicWandIcon className="w-6 h-6 min-w-4" />}
 				<span
 					className={cn("p-3 rounded-md max-w-xs", {
 						"bg-accent text-accent-foreground": position === "right",
@@ -139,7 +137,7 @@ export function ChatMessage({
 					{children}
 				</span>
 				{position === "right" && (
-					<PersonIcon width={6} height={6} className="w-4 h-4 min-w-4" />
+					<PersonIcon width={6} height={6} className="w-6 h-6 min-w-4" />
 				)}
 			</div>
 		</div>

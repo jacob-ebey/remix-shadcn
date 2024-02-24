@@ -1,7 +1,7 @@
 [[d1_databases]]
 binding = "DB"
 database_name = "DB"
-database_id = "7e19bdfb-c020-4d07-a8cc-d8cf3bbb45f0"
+database_id = "f088d279-153a-4fe4-8e54-44266965c0cb"
 
 [vars]
 SESSION_SECRET = 's3cr3t'

@@ -12,9 +12,6 @@ import {
 	useNavigation,
 } from "@remix-run/react";
 
-import { title } from "@/config.shared";
-import { formIntent } from "@/lib/forms.server";
-
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -26,13 +23,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { title } from "@/config.shared";
+import { Intents } from "@/intents";
 import { requireUser } from "@/lib/auth.server";
+import { formIntent } from "@/lib/forms.server";
 import { getUserById, updateUser } from "@/lib/user.server";
-import { updateAccountFormSchema, useUpdateAccountForm } from "./form";
 
-enum Intents {
-	UpdateAccount = "updateAccount",
-}
+import { updateAccountFormSchema, useUpdateAccountForm } from "./form";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -142,7 +139,7 @@ export default function Account() {
 								{saving ? (
 									<span className="inline-flex items-center">
 										Saving{" "}
-										<ArchiveIcon className="text-primary-foreground ml-2" />
+										<ArchiveIcon className="text-primary-foreground ml-2 w-6 h-6" />
 									</span>
 								) : (
 									"Save"
