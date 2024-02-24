@@ -27,10 +27,13 @@ function NavProvider({ children }: { children: React.ReactNode }) {
 function App({ children }: { children: React.ReactNode }) {
 	return (
 		<NavProvider>
-			<ThemeSwitcherSafeHTML lang="en">
+			<ThemeSwitcherSafeHTML lang="en" className="touch-manipulation">
 				<head>
 					<meta charSet="utf-8" />
-					<meta name="viewport" content="width=device-width, initial-scale=1" />
+					<meta
+						name="viewport"
+						content="width=device-width, initial-scale=1, user-scalable=no"
+					/>
 					<Meta />
 					<Links />
 					<ThemeSwitcherScript />

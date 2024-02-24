@@ -175,6 +175,7 @@ export function ChatBottomBar({ chatId }: { chatId: string | undefined }) {
 			const textArea = autoHeightTextArea.ref.current;
 			setTimeout(() => {
 				if (textArea && message.trim()) {
+					textArea.style.height = "inherit";
 					textArea.value = "";
 
 					if (autoHeightTextArea.ref.current) {
