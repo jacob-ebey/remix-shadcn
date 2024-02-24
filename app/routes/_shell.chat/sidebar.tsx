@@ -24,7 +24,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 			className="relative group @container flex flex-col h-full p-0 @[120px]:p-4 max-w-[90vw] md:max-w-[30vw] group-[[data-collapsed=true]]:hidden md:group-[[data-collapsed=true]]:flex"
 		>
 			<div className="sr-only flex @[120px]:not-sr-only justify-between @[120px]:p-4 items-center">
-				<div className="flex gap-2 items-center text-2xl">
+				<div className="flex gap-2 items-center">
 					<p className="font-medium">Chats</p>
 					<span className="text-foreground">({chats.length})</span>
 				</div>
@@ -43,7 +43,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 							size="lg"
 							variant="ghost"
 							asChild
-							className="justify-center @[120px]:justify-start gap-4 px-2 py-2 flex h-auto min-w-0 w-full @[120px]:px-8 @[120px]:rounded-none"
+							className="justify-center @[120px]:justify-start gap-4 px-2 py-2 flex h-auto min-w-0 w-full @[120px]:px-4 @[120px]:rounded-none"
 						>
 							<ListBoxItem
 								id={chat.id}
