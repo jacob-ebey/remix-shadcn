@@ -25,7 +25,7 @@ function NavProvider({ children }: { children: React.ReactNode }) {
 	return <RouterProvider navigate={navigate}>{children}</RouterProvider>;
 }
 
-function App({ children }: { children: React.ReactNode }) {
+export function Layout({ children }: { children: React.ReactNode }) {
 	return (
 		<NavProvider>
 			<ThemeSwitcherSafeHTML
@@ -54,11 +54,7 @@ function App({ children }: { children: React.ReactNode }) {
 }
 
 export default function Root() {
-	return (
-		<App>
-			<Outlet />
-		</App>
-	);
+	return <Outlet />;
 }
 
 export function ErrorBoundary() {
@@ -77,11 +73,9 @@ export function ErrorBoundary() {
 	}
 
 	return (
-		<App>
-			<div className="container prose py-8">
-				<h1>{status}</h1>
-				<p>{message}</p>
-			</div>
-		</App>
+		<div className="container prose py-8">
+			<h1>{status}</h1>
+			<p>{message}</p>
+		</div>
 	);
 }

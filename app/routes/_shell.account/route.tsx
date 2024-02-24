@@ -148,11 +148,6 @@ export default function Account() {
 									"Save"
 								)}
 							</Button>
-							{accountForm.dirty && (
-								<div className="text-sm text-muted-foreground">
-									Unsaved changes
-								</div>
-							)}
 						</div>
 					</CardFooter>
 				</Card>

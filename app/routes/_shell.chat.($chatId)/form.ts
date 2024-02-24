@@ -7,7 +7,7 @@ import { useForm } from "@/lib/forms";
 export const sendMessageFormSchema = zfd.formData({
 	prompt: z.string().trim().optional(),
 	message: z
-		.string({ required_error: "Display name is required" })
+		.string({ required_error: "Message is required" })
 		.trim()
 		.min(1, "Message is required"),
 });
@@ -16,18 +16,32 @@ export function useSendMessageForm(
 	lastResult: unknown,
 	{ disabled }: { disabled?: boolean } = {},
 ) {
-	return useForm(sendMessageFormSchema, {
+	const [form, fields] = useForm(sendMessageFormSchema, {
 		id: "send-message-form",
 		lastResult: lastResult as SubmissionResult<string[]> | null | undefined,
 		shouldRevalidate: "onBlur",
 		shouldValidate: "onSubmit",
 		onSubmit(event) {
-			if (disabled) {
+			const textArea = event.currentTarget.elements.namedItem(
+				fields.message.name,
+			) as HTMLTextAreaElement | null;
+
+			if (disabled || !textArea) {
 				event.preventDefault();
 				return;
 			}
+
+			const message = textArea.value;
+			setTimeout(() => {
+				if (textArea && message.trim()) {
+					form.reset();
+					textArea.style.height = "inherit";
+				}
+			}, 1);
 		},
 	});
+
+	return [form, fields];
 }
 
 export const updateChatSettingsFormSchema = zfd.formData({

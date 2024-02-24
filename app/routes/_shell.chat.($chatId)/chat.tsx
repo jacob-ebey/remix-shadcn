@@ -6,7 +6,7 @@ import {
 	Pencil1Icon,
 	PersonIcon,
 } from "@radix-ui/react-icons";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Link, useActionData, useFetcher } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
 
@@ -27,7 +27,8 @@ import { cn } from "@/lib/styles";
 
 import { RecursivePromise } from "../api.chat.($chatId)/client";
 import { DEFAULT_SYSTEM_PROMPT } from "./ai";
-import { useChatSettingsForm } from "./form";
+import { useChatSettingsForm, useSendMessageForm } from "./form";
+import type { clientAction } from "./route";
 
 export interface Message {
 	id: number;
@@ -52,8 +53,7 @@ export function ChatTopBar({
 	systemPrompt: string | undefined;
 }) {
 	const autoHeightTextArea = useAutoHeightTextArea();
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	const loaderData = useLoaderData<any>();
+	const actionData = useActionData<typeof clientAction>();
 	const saveSettingsFetcher = useFetcher({
 		key: `updated-chat-settings-${chatId || ""}`,
 	});
@@ -63,7 +63,7 @@ export function ChatTopBar({
 		saveSettingsFetcher.formData?.get("intent") === Intents.UpdateChatSettings;
 
 	const [updateChatSettingsForm, updateChatSettingsFields] =
-		useChatSettingsForm(loaderData?.[Intents.UpdateChatSettings]?.lastResult, {
+		useChatSettingsForm(actionData?.[Intents.UpdateChatSettings]?.lastResult, {
 			disabled: savingSettings,
 		});
 
@@ -73,7 +73,7 @@ export function ChatTopBar({
 				{chatId && <MagicWandIcon className="h-4 w-4" />}
 				<div className="flex-1 min-w-0">
 					<div className="font-medium whitespace-nowrap truncate">
-						{chatId ? chatName : "New Chat"}
+						{chatId ? chatName : "New chat"}
 					</div>
 					{/* <span className="text-xs whitespace-nowrap">Active 2 mins ago</span> */}
 				</div>
@@ -199,9 +199,14 @@ export function ChatBottomBar({
 	chatId,
 	prompt,
 }: { chatId: string | undefined; prompt: string | undefined }) {
+	const actionData = useActionData<typeof clientAction>();
 	const fetcher = useFetcher({ key: "send-message" });
 
 	const autoHeightTextArea = useAutoHeightTextArea();
+	const [sendMessageForm, sendMessageFields] = useSendMessageForm(
+		actionData?.[Intents.SendMessage]?.lastResult,
+		{ disabled: fetcher.state === "submitting" },
+	);
 
 	const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (event.key === "Enter" && event.shiftKey) {
@@ -211,19 +216,6 @@ export function ChatBottomBar({
 		}
 
 		if (event.key === "Enter" && !event.shiftKey) {
-			const message = event.currentTarget.value;
-			const textArea = autoHeightTextArea.ref.current;
-			setTimeout(() => {
-				if (textArea && message.trim()) {
-					textArea.style.height = "inherit";
-					textArea.value = "";
-
-					if (autoHeightTextArea.ref.current) {
-						autoHeightTextArea.ref.current.focus();
-					}
-				}
-			}, 1);
-
 			event.currentTarget.form?.requestSubmit();
 			event.preventDefault();
 			return;
@@ -232,6 +224,7 @@ export function ChatBottomBar({
 
 	return (
 		<fetcher.Form
+			{...getFormProps(sendMessageForm)}
 			method="POST"
 			className="p-2 flex justify-between w-full items-center gap-2"
 		>
@@ -242,16 +235,23 @@ export function ChatBottomBar({
 				value={prompt !== DEFAULT_SYSTEM_PROMPT ? prompt : ""}
 			/>
 
-			<div className="w-full relative">
+			<div className="w-full relative space-y-2">
 				<Textarea
+					{...getTextareaProps(sendMessageFields.message)}
 					{...autoHeightTextArea}
 					key={chatId}
 					autoComplete="off"
 					onKeyDown={handleKeyPress}
 					name="message"
-					placeholder="Aa"
+					placeholder="Enter a message..."
 					className=" w-full border flex items-center h-9 resize-none overflow-hidden bg-background"
 				/>
+				<div
+					id={sendMessageFields.message.descriptionId}
+					className="text-sm text-destructive"
+				>
+					{sendMessageFields.message.errors || sendMessageFields.global.errors}
+				</div>
 			</div>
 
 			<Button type="submit" variant="ghost" size="icon" className="h-4 w-4">

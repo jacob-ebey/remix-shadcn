@@ -1,5 +1,5 @@
-import { ChatBubbleIcon, TrashIcon } from "@radix-ui/react-icons";
-import { Form, useParams } from "@remix-run/react";
+import { ChatBubbleIcon, PersonIcon, TrashIcon } from "@radix-ui/react-icons";
+import { Form, Link, useParams } from "@remix-run/react";
 import { ListBox, ListBoxItem } from "react-aria-components";
 
 import { Button } from "@/components/ui/button";
@@ -97,8 +97,25 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 							height={6}
 						/>
 						<div className="flex sr-only flex-col min-w-0 @[120px]:not-sr-only">
-							<span className="truncate">Clear Chats</span>
+							<span className="truncate">Clear chats</span>
 						</div>
+					</Button>
+					<Button
+						asChild
+						size="lg"
+						variant="ghost"
+						className="justify-center @[120px]:justify-start gap-4 py-2 div h-auto min-w-0 w-full px-2 @[120px]:px-4 rounded-none"
+					>
+						<Link to="/account">
+							<PersonIcon
+								className="min-w-4 min-h-6 w-6 h-6"
+								width={6}
+								height={6}
+							/>
+							<div className="flex sr-only flex-col min-w-0 @[120px]:not-sr-only">
+								<span className="truncate">Account settings</span>
+							</div>
+						</Link>
 					</Button>
 				</div>
 			</nav>
