@@ -22,12 +22,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea, useAutoHeightTextArea } from "@/components/ui/textarea";
-import { Intents } from "@/intents";
+import { Intents, useChatSettingsForm, useSendMessageForm } from "@/forms";
+import { DEFAULT_SYSTEM_PROMPT } from "@/lib/ai";
 import { cn } from "@/lib/styles";
+import type { RecursivePromise } from "@/routes/api.chat.($chatId)/client";
 
-import { RecursivePromise } from "../api.chat.($chatId)/client";
-import { DEFAULT_SYSTEM_PROMPT } from "./ai";
-import { useChatSettingsForm, useSendMessageForm } from "./form";
 import type { clientAction } from "./route";
 
 export interface Message {

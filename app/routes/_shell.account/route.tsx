@@ -24,12 +24,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { title } from "@/config.shared";
-import { Intents } from "@/intents";
+import {
+	Intents,
+	updateAccountFormSchema,
+	useUpdateAccountForm,
+} from "@/forms";
 import { requireUser } from "@/lib/auth.server";
 import { formIntent } from "@/lib/forms";
 import { getUserById, updateUser } from "@/lib/user.server";
-
-import { updateAccountFormSchema, useUpdateAccountForm } from "./form";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -95,6 +97,7 @@ export default function Account() {
 								{...getInputProps(accountFields.displayName, {
 									type: "text",
 								})}
+								key={accountFields.displayName.key}
 								placeholder="Anonymous"
 								required
 								defaultValue={account?.displayName}
@@ -112,6 +115,7 @@ export default function Account() {
 								{...getInputProps(accountFields.fullName, {
 									type: "text",
 								})}
+								key={accountFields.fullName.key}
 								placeholder="John Doe"
 								required
 								defaultValue={account?.fullName}

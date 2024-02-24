@@ -1,6 +1,7 @@
 import type { BaseMessageChunk } from "@langchain/core/messages";
 import type { ActionFunctionArgs } from "@remix-run/cloudflare";
 
+import { Intents, sendMessageFormSchema } from "@/forms";
 import { requireUser } from "@/lib/auth.server";
 import {
 	addMessage,
@@ -10,13 +11,10 @@ import {
 	updateMessage,
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms";
-
-import { Intents } from "@/intents";
 import {
 	DEFAULT_SYSTEM_PROMPT,
 	createConversationChain,
-} from "@/routes/_shell.chat.($chatId)/ai";
-import { sendMessageFormSchema } from "@/routes/_shell.chat.($chatId)/form";
+} from "@/lib/ai";
 
 export async function action({
 	context,

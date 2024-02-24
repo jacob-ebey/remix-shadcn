@@ -57,14 +57,6 @@ export const chatMessage = sqliteTable("chat_message", {
 	userId: text("userId").references(() => user.id),
 });
 
-export const chatSettings = sqliteTable("chat_settings", {
-	id: stringId("id"),
-	chatId: text("chatId")
-		.notNull()
-		.references(() => chat.id, { onDelete: "cascade" }),
-	prompt: text("prompt"),
-});
-
 const chatMessageRelations = relations(chatMessage, ({ one }) => ({
 	chat: one(chat, {
 		fields: [chatMessage.chatId],
@@ -75,7 +67,44 @@ const chatMessageRelations = relations(chatMessage, ({ one }) => ({
 		references: [user.id],
 	}),
 }));
+
+export const chatSettings = sqliteTable("chat_settings", {
+	id: stringId("id"),
+	chatId: text("chatId")
+		.notNull()
+		.references(() => chat.id, { onDelete: "cascade" }),
+	prompt: text("prompt"),
+});
+
+const agent = sqliteTable("agent", {
+	id: stringId("id"),
+	visibility: text("visibility", { enum: ["private", "public"] }).default(
+		"private",
+	),
+	createdAt: createdAt(),
+	createdBy: text("userId")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+});
+
+const agentStep = sqliteTable("agent_step", {
+	id: stringId("id"),
+	systemTemplate: text("system_template").notNull(),
+	messageTemplate: text("message_template").notNull(),
+	createdAt: createdAt(),
+	agentId: text("agentId")
+		.notNull()
+		.references(() => agent.id, { onDelete: "cascade" }),
+});
+
+const agentRelations = relations(agent, ({ many }) => ({
+	steps: many(agentStep),
+}));
+
 const schema = {
+	agent,
+	agentRelations,
+	agentStep,
 	chat,
 	chatMessage,
 	chatMessageRelations,

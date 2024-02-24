@@ -2,14 +2,19 @@ import { ChatBubbleIcon, PersonIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Form, Link, useParams } from "@remix-run/react";
 import { ListBox, ListBoxItem } from "react-aria-components";
 
+import {
+	ConfirmationContent,
+	useConfirmationDialog,
+} from "@/components/confirmation-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Intents } from "@/intents";
-import { ChatSummary } from "@/lib/chats.server";
+import { Intents } from "@/forms";
+import type { ChatSummary } from "@/lib/chats.server";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
 interface SidebarProps {
 	chats: ChatSummary[];
@@ -19,14 +24,13 @@ interface SidebarProps {
 export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 	const { chatId } = useParams();
 
+	const confirmation = useConfirmationDialog();
+
 	return (
 		<div
 			data-collapsed={isCollapsed}
 			className="relative group @container flex flex-col h-full p-0 @[120px]:p-4 max-w-[90vw] md:max-w-[30vw] group-[[data-collapsed=true]]:hidden md:group-[[data-collapsed=true]]:flex"
 		>
-			<Form id="clear-chats-form" method="POST">
-				<input type="hidden" name="intent" value={Intents.ClearChats} />
-			</Form>
 			<div className="sr-only flex @[120px]:not-sr-only justify-between @[120px]:p-4 items-center border-b border-border">
 				<div className="flex gap-2 items-center">
 					<p className="font-medium">Chats</p>
@@ -83,23 +87,55 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 				</ListBox>
 			</nav>
 			<nav className="overflow-y-auto py-2 border-t border-border">
+				<Form id="clear-chats-form" method="POST" className="hidden" />
 				<div className="flex flex-col gap-1 justify-center @[120px]:justify-start">
-					<Button
-						type="submit"
-						form="clear-chats-form"
-						size="lg"
-						variant="ghost"
-						className="justify-center @[120px]:justify-start gap-4 py-2 div h-auto min-w-0 w-full px-2 @[120px]:px-4 rounded-none"
-					>
-						<TrashIcon
-							className="min-w-4 min-h-6 w-6 h-6"
-							width={6}
-							height={6}
-						/>
-						<div className="flex sr-only flex-col min-w-0 @[120px]:not-sr-only">
-							<span className="truncate">Clear chats</span>
-						</div>
-					</Button>
+					<confirmation.Provider>
+						<Dialog
+							open={confirmation.open}
+							onOpenChange={confirmation.onOpenChange}
+						>
+							<DialogTrigger asChild>
+								<Button
+									form="clear-chats-form"
+									type="submit"
+									name="intent"
+									value={Intents.ClearChats}
+									size="lg"
+									variant="ghost"
+									className="justify-center @[120px]:justify-start gap-4 py-2 div h-auto min-w-0 w-full px-2 @[120px]:px-4 rounded-none"
+									onClick={(event) => {
+										confirmation.setOptions({
+											title: "Clear chats?",
+											description:
+												"Are you sure you want to clear all chats? This action cannot be undone.",
+											options: [
+												{
+													label: "Cancel",
+												},
+												{
+													label: "Yes, clear chats",
+													variant: "destructive",
+													intent: Intents.ClearChats,
+													form: "clear-chats-form",
+												},
+											],
+										});
+										event.preventDefault();
+									}}
+								>
+									<TrashIcon
+										className="min-w-4 min-h-6 w-6 h-6"
+										width={6}
+										height={6}
+									/>
+									<div className="flex sr-only flex-col min-w-0 @[120px]:not-sr-only">
+										<span className="truncate">Clear chats</span>
+									</div>
+								</Button>
+							</DialogTrigger>
+							<ConfirmationContent />
+						</Dialog>
+					</confirmation.Provider>
 					<Button
 						asChild
 						size="lg"

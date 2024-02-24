@@ -16,9 +16,9 @@ import {
 	ThemeSwitcherSafeHTML,
 	ThemeSwitcherScript,
 } from "@/components/theme-switcher";
-
 import { TooltipProvider } from "@/components/ui/tooltip";
-import "@/globals.css";
+
+import "./globals.css";
 
 function NavProvider({ children }: { children: React.ReactNode }) {
 	const navigate = useNavigate();

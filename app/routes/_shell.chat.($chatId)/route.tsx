@@ -13,21 +13,25 @@ import {
 import * as React from "react";
 import { z } from "zod";
 
-import { Intents } from "@/intents";
+import {
+	Intents,
+	sendMessageFormSchema,
+	updateChatSettingsFormSchema,
+} from "@/forms";
+import { DEFAULT_SYSTEM_PROMPT, createConversationChain } from "@/lib/ai";
 import { requireUser } from "@/lib/auth.server";
 import {
-	type ChatMessage as Message,
 	ChatSettings,
 	addMessage,
 	clearChats,
 	createChat,
 	getChat,
 	updateChatSettings,
+	type ChatMessage as Message,
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms";
+import { sendMessage } from "@/routes/api.chat.($chatId)/client";
 
-import { sendMessage } from "../api.chat.($chatId)/client";
-import { DEFAULT_SYSTEM_PROMPT, createConversationChain } from "./ai";
 import {
 	AnimatedMessages,
 	ChatBottomBar,
@@ -35,7 +39,6 @@ import {
 	ChatTopBar,
 	StreamingBotMessage,
 } from "./chat";
-import { sendMessageFormSchema, updateChatSettingsFormSchema } from "./form";
 
 export async function loader({
 	context,
