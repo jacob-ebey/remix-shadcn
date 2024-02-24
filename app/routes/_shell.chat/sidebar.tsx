@@ -1,3 +1,7 @@
+import { ChatBubbleIcon, GearIcon } from "@radix-ui/react-icons";
+import { useParams } from "@remix-run/react";
+import { ListBox, ListBoxItem } from "react-aria-components";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -5,10 +9,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useParams } from "@remix-run/react";
-import { ListBox, ListBoxItem } from "react-aria-components";
-
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { ChatSummary } from "@/lib/chats.server";
 import { cn } from "@/lib/styles";
 
@@ -23,106 +23,78 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 	return (
 		<div
 			data-collapsed={isCollapsed}
-			className="relative group flex flex-col h-full gap-4 data-[collapsed=true]:p-0"
+			className="relative @container flex flex-col h-full p-0 @[110px]:p-4"
 		>
-			{!isCollapsed && (
-				<div className="flex justify-between p-2 items-center">
-					<div className="flex gap-2 items-center text-2xl">
-						<p className="font-medium">Chats</p>
-						<span className="text-foreground">({chats.length})</span>
-					</div>
+			<div className="sr-only flex @[110px]:not-sr-only justify-between @[110px]:p-2 items-center">
+				<div className="flex gap-2 items-center text-2xl">
+					<p className="font-medium">Chats</p>
+					<span className="text-foreground">({chats.length})</span>
 				</div>
-			)}
-			<nav className="overflow-y-auto py-2">
+			</div>
+			<nav className="overflow-y-auto flex-1 py-2 @[110px]:p-0">
 				<ListBox
 					selectionMode="single"
-					className="grid gap-1 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]"
+					className="grid gap-1 justify-center @[110px]:justify-start"
 					aria-label="Chats"
 					selectedKeys={chatId ? [chatId] : []}
 					key={chats.length}
 				>
-					{chats.map((chat) =>
-						isCollapsed ? (
+					{chats.map((chat) => (
+						<Button
+							key={chat.id}
+							size="lg"
+							variant="ghost"
+							asChild
+							className="justify-center @[110px]:justify-start gap-4 py-2 flex h-auto min-w-0 w-full px-2 @[110px]:px-8 @[110px]:rounded-none"
+						>
 							<ListBoxItem
-								key={chat.id}
-								className={cn(
-									buttonVariants({
-										size: "icon",
-										variant: "ghost",
-									}),
-									"w-14 h-14",
-								)}
 								id={chat.id}
 								href={`/chat/${chat.id}`}
 								textValue={`From: ${chat.name}.${
 									chat.lastMessage
-										? `Last message: ${chat.lastMessage}`
+										? ` Last message: ${chat.lastMessage}`
 										: "No messages"
 								}`}
 							>
-								<TooltipProvider>
-									<Tooltip delayDuration={0}>
-										<TooltipTrigger asChild>
-											<Avatar className="flex justify-center items-center">
-												<AvatarImage
-													src={`https://random-image-pepebigotes.vercel.app/api/random-image?chat=${chat.id}`}
-													alt=""
-													width={6}
-													height={6}
-													className="w-10 h-10"
-												/>
-											</Avatar>
-										</TooltipTrigger>
-										<TooltipContent
-											side="right"
-											className="flex items-center gap-4"
-										>
-											{chat.name}
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-
-								<span className="sr-only">{chat.name}</span>
+								<ChatBubbleIcon className="min-w-6 min-h-6 w-6 h-6" />
+								<div className="flex-1 flex sr-only flex-col min-w-0 @[110px]:not-sr-only">
+									<span className="truncate">{chat.name}</span>
+									{chat.lastMessage && (
+										<span className="text-muted-foreground text-xs truncate">
+											{chat.lastMessage.sender.split(" ")[0]}:{" "}
+											{chat.lastMessage.message}
+										</span>
+									)}
+								</div>
 							</ListBoxItem>
-						) : (
-							<Button
-								key={chat.id}
-								size="lg"
-								variant="ghost"
-								asChild
-								className="justify-start gap-4 py-2 flex h-auto min-w-0 w-full"
-							>
-								<ListBoxItem
-									id={chat.id}
-									href={`/chat/${chat.id}`}
-									textValue={`From: ${chat.name}.${
-										chat.lastMessage
-											? ` Last message: ${chat.lastMessage}`
-											: "No messages"
-									}`}
-								>
-									<Avatar className="flex justify-center items-center">
-										<AvatarImage
-											src={`https://random-image-pepebigotes.vercel.app/api/random-image?chat=${chat.id}`}
-											alt=""
-											width={6}
-											height={6}
-											className="w-10 h-10 "
-										/>
-									</Avatar>
-									<div className="flex-1 flex flex-col min-w-0">
-										<span className="truncate">{chat.name}</span>
-										{chat.lastMessage && (
-											<span className="text-muted-foreground text-xs truncate">
-												{chat.lastMessage.sender.split(" ")[0]}:{" "}
-												{chat.lastMessage.message}
-											</span>
-										)}
-									</div>
-								</ListBoxItem>
-							</Button>
-						),
-					)}
+						</Button>
+					))}
+				</ListBox>
+			</nav>
+			<nav className="overflow-y-auto py-2 border-t border-border">
+				<ListBox
+					selectionMode="single"
+					className="grid gap-1 justify-center @[110px]:justify-start"
+					aria-label="Admin"
+					selectedKeys={chatId ? [chatId] : []}
+				>
+					<Button
+						size="lg"
+						variant="ghost"
+						asChild
+						className="justify-center @[110px]:justify-start gap-4 py-2 flex h-auto min-w-0 w-full px-2 @[110px]:px-8 @[110px]:rounded-none"
+					>
+						<ListBoxItem href="/chats/settings">
+							<GearIcon
+								className="min-w-6 min-h-6 w-6 h-6"
+								width={6}
+								height={6}
+							/>
+							<div className="flex-1 flex sr-only flex-col min-w-0 @[110px]:not-sr-only">
+								<span className="truncate">Settings</span>
+							</div>
+						</ListBoxItem>
+					</Button>
 				</ListBox>
 			</nav>
 		</div>

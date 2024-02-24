@@ -1,9 +1,14 @@
-import { GearIcon, PaperPlaneIcon, Pencil1Icon } from "@radix-ui/react-icons";
-import { Form, Link, useFetcher, useNavigate } from "@remix-run/react";
+import {
+	GearIcon,
+	MagicWandIcon,
+	PaperPlaneIcon,
+	Pencil1Icon,
+	PersonIcon,
+} from "@radix-ui/react-icons";
+import { Link, useFetcher } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
 
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -34,27 +39,14 @@ export interface UserData {
 	name: string;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: TODO: add links
-const topLinks: { Icon: any; id: string }[] = []; // [{ icon: Phone }, { icon: Video }, { icon: Info }];
-
 export function ChatTopBar({
 	chatId,
 	chatName,
 }: { chatId: string | undefined; chatName: string | undefined }) {
 	return (
-		<div className="w-full h-20 flex p-4 justify-between items-center border-b">
+		<div className="w-full flex py-2 px-4 md:p-4 justify-between items-center border-b">
 			<div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0">
-				{chatId && (
-					<Avatar className="flex justify-center items-center">
-						<AvatarImage
-							src={`https://random-image-pepebigotes.vercel.app/api/random-image?chat=${chatId}`}
-							alt=""
-							width={6}
-							height={6}
-							className="w-10 h-10 "
-						/>
-					</Avatar>
-				)}
+				{chatId && <MagicWandIcon className="h-4 w-4" />}
 				<div className="flex-1">
 					<div className="font-medium whitespace-nowrap">
 						{chatId ? chatName : "New Chat"}
@@ -91,7 +83,7 @@ export function ChatTopBar({
 				</Dialog>
 
 				<Button asChild size="icon" variant="ghost">
-					<Link to="/chat" className="h-9 w-9">
+					<Link to="/chat" className="h-4 w-4">
 						<Pencil1Icon />
 					</Link>
 				</Button>
@@ -136,9 +128,7 @@ export function ChatMessage({
 		>
 			<div className="flex gap-3 items-end">
 				{position === "left" && (
-					<Avatar className="flex justify-center items-center">
-						<AvatarImage src={avatar} alt={sender} width={6} height={6} />
-					</Avatar>
+					<MagicWandIcon width={6} height={6} className="w-4 h-4 min-w-4" />
 				)}
 				<span
 					className={cn("p-3 rounded-md max-w-xs", {
@@ -149,9 +139,7 @@ export function ChatMessage({
 					{children}
 				</span>
 				{position === "right" && (
-					<Avatar className="flex justify-center items-center">
-						<AvatarImage src={avatar} alt={sender} width={6} height={6} />
-					</Avatar>
+					<PersonIcon width={6} height={6} className="w-4 h-4 min-w-4" />
 				)}
 			</div>
 		</div>
@@ -209,7 +197,7 @@ export function ChatBottomBar({ chatId }: { chatId: string | undefined }) {
 				/>
 			</div>
 
-			<Button type="submit" variant="ghost" size="icon" className="h-9 w-9">
+			<Button type="submit" variant="ghost" size="icon" className="h-4 w-4">
 				<PaperPlaneIcon className="text-muted-foreground" />
 			</Button>
 		</fetcher.Form>

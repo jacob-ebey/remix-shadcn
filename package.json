@@ -61,6 +61,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.5.3",
 		"@remix-run/dev": "*",
+		"@tailwindcss/container-queries": "0.1.1",
 		"@tailwindcss/typography": "0.5.10",
 		"@types/bcryptjs": "2.4.6",
 		"@types/better-sqlite3": "7.6.9",

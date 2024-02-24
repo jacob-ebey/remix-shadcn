@@ -82,11 +82,11 @@ export default function ChatLayout() {
 			className="h-full items-stretch"
 		>
 			<ResizablePanel
-				defaultSize={defaultLayout?.[0]}
+				defaultSize={defaultLayout?.[0] ?? 8}
 				collapsedSize={8}
 				collapsible={true}
 				minSize={isMobile ? 0 : 24}
-				maxSize={isMobile ? 8 : 30}
+				maxSize={isMobile ? undefined : 30}
 				onCollapse={() => {
 					setIsCollapsed(true);
 					document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
@@ -100,8 +100,7 @@ export default function ChatLayout() {
 					)}; Path=/chat`;
 				}}
 				className={cn(
-					isCollapsed &&
-						"min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out",
+					isCollapsed && "min-w-[50px] transition-all duration-300 ease-in-out",
 				)}
 			>
 				<Sidebar isCollapsed={isCollapsed || isMobile} chats={chats} />
