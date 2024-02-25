@@ -1,9 +1,9 @@
 import {
 	ChatBubbleIcon,
+	GearIcon,
 	Pencil1Icon,
 	PersonIcon,
 	TrashIcon,
-	TwitterLogoIcon
 } from "@radix-ui/react-icons";
 import { Form, Link, useParams } from "@remix-run/react";
 import { ListBox, ListBoxItem } from "react-aria-components";
@@ -164,7 +164,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 						className="justify-center @[150px]:justify-start gap-4 py-2 div h-auto min-w-0 w-full px-2 @[150px]:px-4 rounded-none"
 					>
 						<Link to="/settings">
-							<TwitterLogoIcon
+							<PersonIcon
 								className="min-w-6 min-h-6 w-6 h-6"
 								width={6}
 								height={6}
@@ -181,13 +181,13 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 						className="justify-center @[150px]:justify-start gap-4 py-2 div h-auto min-w-0 w-full px-2 @[150px]:px-4 rounded-none"
 					>
 						<Link to="/settings">
-							<PersonIcon
+							<GearIcon
 								className="min-w-6 min-h-6 w-6 h-6"
 								width={6}
 								height={6}
 							/>
 							<div className="flex sr-only flex-col min-w-0 @[150px]:not-sr-only">
-								<span className="truncate">Account settings</span>
+								<span className="truncate">Global settings</span>
 							</div>
 						</Link>
 					</Button>
