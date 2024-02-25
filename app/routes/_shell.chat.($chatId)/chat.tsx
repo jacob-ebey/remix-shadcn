@@ -131,12 +131,6 @@ export function ChatTopBar({
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
-
-				<Button asChild size="icon" variant="ghost">
-					<Link to="/chat">
-						<Pencil1Icon className="w-6 h-6" />
-					</Link>
-				</Button>
 			</div>
 		</div>
 	);
