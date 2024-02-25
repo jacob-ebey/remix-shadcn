@@ -3,6 +3,7 @@ import {
 	Pencil1Icon,
 	PersonIcon,
 	TrashIcon,
+	TwitterLogoIcon
 } from "@radix-ui/react-icons";
 import { Form, Link, useParams } from "@remix-run/react";
 import { ListBox, ListBoxItem } from "react-aria-components";
@@ -162,9 +163,26 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 						variant="ghost"
 						className="justify-center @[150px]:justify-start gap-4 py-2 div h-auto min-w-0 w-full px-2 @[150px]:px-4 rounded-none"
 					>
-						<Link to="/account">
+						<Link to="/settings">
+							<TwitterLogoIcon
+								className="min-w-6 min-h-6 w-6 h-6"
+								width={6}
+								height={6}
+							/>
+							<div className="flex sr-only flex-col min-w-0 @[150px]:not-sr-only">
+								<span className="truncate">AI Agents</span>
+							</div>
+						</Link>
+					</Button>
+					<Button
+						asChild
+						size="lg"
+						variant="ghost"
+						className="justify-center @[150px]:justify-start gap-4 py-2 div h-auto min-w-0 w-full px-2 @[150px]:px-4 rounded-none"
+					>
+						<Link to="/settings">
 							<PersonIcon
-								className="min-w-4 min-h-6 w-6 h-6"
+								className="min-w-6 min-h-6 w-6 h-6"
 								width={6}
 								height={6}
 							/>

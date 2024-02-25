@@ -68,6 +68,12 @@ const chatMessageRelations = relations(chatMessage, ({ one }) => ({
 	}),
 }));
 
+export const globalChatSettings = sqliteTable("global_chat_settings", {
+	id: stringId("id"),
+	prompt: text("prompt"),
+	userId: text("userId").references(() => user.id, { onDelete: "cascade" }),
+});
+
 export const chatSettings = sqliteTable("chat_settings", {
 	id: stringId("id"),
 	chatId: text("chatId")
@@ -110,6 +116,7 @@ const schema = {
 	chatMessageRelations,
 	chatRelations,
 	chatSettings,
+	globalChatSettings,
 	password,
 	user,
 };

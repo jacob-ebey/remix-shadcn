@@ -1,7 +1,12 @@
 import { AppLoadContext } from "@remix-run/cloudflare";
 import { and, asc, desc, eq } from "drizzle-orm";
 
-import { chat, chatMessage, chatSettings } from "@/db.server/schema";
+import {
+	chat,
+	chatMessage,
+	chatSettings,
+	globalChatSettings,
+} from "@/db.server/schema";
 import { getUserById } from "@/lib/user.server";
 
 export interface ChatSummary {
@@ -261,4 +266,50 @@ export async function deleteMessage({ DB }: AppLoadContext, messageId: string) {
 		eq(chatMessage.id, messageId),
 	);
 	return deleted.success;
+}
+
+export async function updateGlobalChatSettings(
+	context: AppLoadContext,
+	userId: string,
+	{ prompt }: { prompt?: string },
+) {
+	const existingSettings = await context.DB.query.globalChatSettings.findFirst({
+		where: eq(globalChatSettings.userId, userId),
+		columns: {
+			prompt: true,
+		},
+	});
+
+	if (existingSettings) {
+		const updated = await context.DB.update(globalChatSettings)
+			.set({ prompt: prompt || null })
+			.where(eq(globalChatSettings.userId, userId))
+			.returning({
+				prompt: globalChatSettings.prompt,
+			});
+		const updatedSettings = updated[0];
+		return updatedSettings || null;
+	}
+
+	const inserted = await context.DB.insert(globalChatSettings)
+		.values({
+			userId,
+			prompt: prompt || null,
+		})
+		.returning({
+			prompt: globalChatSettings.prompt,
+		});
+	const insertedSettings = inserted[0];
+	return insertedSettings || null;
+}
+
+export async function getGlobalChatSettings(
+	{ DB }: AppLoadContext,
+	userId: string,
+) {
+	const settings = await DB.select({ prompt: globalChatSettings.prompt })
+		.from(globalChatSettings)
+		.where(eq(globalChatSettings.userId, userId));
+	const result = settings[0];
+	return result || null;
 }

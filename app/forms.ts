@@ -6,11 +6,12 @@ import { useForm } from "@/lib/forms";
 
 export enum Intents {
 	ClearChats = "clearChats",
-	SendMessage = "sendMessage",
 	Login = "login",
+	SendMessage = "sendMessage",
+	Signup = "signup",
 	UpdateAccount = "updateAccount",
 	UpdateChatSettings = "updateChatSettings",
-	Signup = "signup",
+	UpdateGlobalPrompt = "updateGlobalPrompt",
 }
 
 export const loginFormSchema = zfd.formData({
@@ -118,6 +119,28 @@ export function useChatSettingsForm(
 ) {
 	return useForm(updateChatSettingsFormSchema, {
 		id: "update-chat-settings-form",
+		lastResult: lastResult as SubmissionResult<string[]> | null | undefined,
+		shouldRevalidate: "onBlur",
+		shouldValidate: "onSubmit",
+		onSubmit(event) {
+			if (disabled) {
+				event.preventDefault();
+				return;
+			}
+		},
+	});
+}
+
+export const updateGlobalPromptFormSchema = zfd.formData({
+	prompt: z.string().trim().optional(),
+});
+
+export function useGlobalPromptForm(
+	lastResult: unknown,
+	{ disabled }: { disabled?: boolean } = {},
+) {
+	return useForm(updateGlobalPromptFormSchema, {
+		id: "update-global-prompt-form",
 		lastResult: lastResult as SubmissionResult<string[]> | null | undefined,
 		shouldRevalidate: "onBlur",
 		shouldValidate: "onSubmit",

@@ -28,6 +28,7 @@ import {
 	getChat,
 	updateChatSettings,
 	type ChatMessage as Message,
+	getGlobalChatSettings,
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms";
 import { sendMessage } from "@/routes/api.chat.($chatId)/client";
@@ -47,9 +48,12 @@ export async function loader({
 }: LoaderFunctionArgs) {
 	const user = await requireUser(context, request);
 
-	const chat = chatId ? await getChat(context, user.id, chatId) : null;
+	const chatPromise = chatId ? getChat(context, user.id, chatId) : null;
+	const settingsPromise = getGlobalChatSettings(context, user.id);
 
-	return { chat };
+	const [chat, settings] = await Promise.all([chatPromise, settingsPromise]);
+
+	return { chat, defaultPrompt: chat?.settings.prompt || settings?.prompt };
 }
 
 export async function action({
@@ -77,10 +81,19 @@ export async function action({
 			Intents.SendMessage,
 			sendMessageFormSchema,
 			async ({ prompt: formPrompt, message }) => {
-				let chat = chatId ? await getChat(context, user.id, chatId) : null;
+				const chatPromise = chatId ? getChat(context, user.id, chatId) : null;
+				const settingsPromise = getGlobalChatSettings(context, user.id);
+
+				let [chat, settings] = await Promise.all([
+					chatPromise,
+					settingsPromise,
+				]);
 
 				const prompt =
-					formPrompt || chat?.settings.prompt || DEFAULT_SYSTEM_PROMPT;
+					formPrompt ||
+					chat?.settings.prompt ||
+					settings?.prompt ||
+					DEFAULT_SYSTEM_PROMPT;
 
 				const history = chat?.messages.map<["ai" | "human", string]>(
 					({ message, sender }) => [sender ? "human" : "ai", message],
@@ -149,7 +162,7 @@ export async function clientAction({
 }
 
 export default function Chat() {
-	const { chat } = useLoaderData<typeof loader>();
+	const { chat, defaultPrompt } = useLoaderData<typeof loader>();
 	const messagesRef = React.useRef<HTMLDivElement>(null);
 
 	const messages = usePendingMessages(chat?.id, chat?.messages || []);
@@ -160,9 +173,7 @@ export default function Chat() {
 		(
 			updatedSettingsFetcher.data?.updateChatSettings
 				?.lastReturn as ChatSettings
-		)?.prompt ||
-		chat?.settings.prompt ||
-		DEFAULT_SYSTEM_PROMPT;
+		)?.prompt || defaultPrompt;
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	React.useEffect(() => {

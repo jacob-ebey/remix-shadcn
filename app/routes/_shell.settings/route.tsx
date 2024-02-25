@@ -1,4 +1,8 @@
-import { getFormProps, getInputProps } from "@conform-to/react";
+import {
+	getFormProps,
+	getInputProps,
+	getTextareaProps,
+} from "@conform-to/react";
 import { ArchiveIcon } from "@radix-ui/react-icons";
 import type {
 	ActionFunctionArgs,
@@ -12,6 +16,10 @@ import {
 	useNavigation,
 } from "@remix-run/react";
 
+import {
+	getGlobalChatSettings,
+	updateGlobalChatSettings,
+} from "@/lib/chats.server";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -27,11 +35,15 @@ import { title } from "@/config.shared";
 import {
 	Intents,
 	updateAccountFormSchema,
+	updateGlobalPromptFormSchema,
+	useGlobalPromptForm,
 	useUpdateAccountForm,
 } from "@/forms";
 import { requireUser } from "@/lib/auth.server";
 import { formIntent } from "@/lib/forms";
 import { getUserById, updateUser } from "@/lib/user.server";
+import { Textarea, useAutoHeightTextArea } from "@/components/ui/textarea";
+import { DEFAULT_SYSTEM_PROMPT } from "@/lib/ai";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -43,9 +55,15 @@ export const meta: MetaFunction = () => {
 export async function loader({ context, request }: LoaderFunctionArgs) {
 	const user = await requireUser(context, request);
 
-	const account = await getUserById(context, user.id);
+	const [account, chatSettings] = await Promise.all([
+		getUserById(context, user.id),
+		getGlobalChatSettings(context, user.id),
+	]);
 
-	return { account };
+	return {
+		account,
+		chatSettings,
+	};
 }
 
 export async function action({ context, request }: ActionFunctionArgs) {
@@ -57,12 +75,20 @@ export async function action({ context, request }: ActionFunctionArgs) {
 		.intent(Intents.UpdateAccount, updateAccountFormSchema, async (data) => {
 			return await updateUser(context, user.id, data);
 		})
+		.intent(
+			Intents.UpdateGlobalPrompt,
+			updateGlobalPromptFormSchema,
+			async (data) => {
+				await updateGlobalChatSettings(context, user.id, data);
+			},
+		)
 		.run();
 }
 
 export default function Account() {
 	const navigation = useNavigation();
-	const { account: loaderAccount } = useLoaderData<typeof loader>();
+	const { account: loaderAccount, chatSettings } =
+		useLoaderData<typeof loader>();
 	const { updateAccount } = useActionData<typeof action>() ?? {};
 
 	const account = updateAccount?.lastReturn ?? loaderAccount;
@@ -80,8 +106,17 @@ export default function Account() {
 		},
 	);
 
+	const [globalPromptForm, globalPromptFields] = useGlobalPromptForm(
+		updateAccount?.lastResult,
+		{
+			disabled: formDisabled,
+		},
+	);
+
+	const autoHeightTextArea = useAutoHeightTextArea();
+
 	return (
-		<main className="container py-8 md:py-16 lg:py-32">
+		<main className="container py-8 md:py-16 lg:py-32 space-y-8">
 			<Form {...getFormProps(accountForm)} method="POST" replace>
 				<input type="hidden" name="intent" value={Intents.UpdateAccount} />
 
@@ -134,6 +169,50 @@ export default function Account() {
 								defaultValue={account?.email}
 								disabled
 							/>
+						</div>
+					</CardContent>
+					<CardFooter>
+						<div className="space-y-2 flex-1">
+							<Button
+								className="w-full block"
+								type="submit"
+								disabled={formDisabled}
+							>
+								{saving ? (
+									<span className="inline-flex items-center">
+										Saving{" "}
+										<ArchiveIcon className="text-primary-foreground ml-2 w-6 h-6" />
+									</span>
+								) : (
+									"Save"
+								)}
+							</Button>
+						</div>
+					</CardFooter>
+				</Card>
+			</Form>
+
+			<Form {...getFormProps(globalPromptForm)} method="POST" replace>
+				<input type="hidden" name="intent" value={Intents.UpdateGlobalPrompt} />
+
+				<Card className="w-full max-w-screen-sm mx-auto">
+					<CardHeader className="space-y-1">
+						<CardTitle>System Prompt</CardTitle>
+						<CardDescription>Edit your system prompt below.</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<Label htmlFor={globalPromptFields.prompt.id}>System Prompt</Label>
+						<Textarea
+							{...getTextareaProps(globalPromptFields.prompt)}
+							{...autoHeightTextArea}
+							defaultValue={chatSettings?.prompt || DEFAULT_SYSTEM_PROMPT}
+						/>
+						<div
+							id={globalPromptFields.prompt.descriptionId}
+							className="text-sm text-destructive"
+						>
+							{globalPromptFields.prompt.errors ||
+								globalPromptFields.global.errors}
 						</div>
 					</CardContent>
 					<CardFooter>

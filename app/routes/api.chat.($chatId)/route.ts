@@ -9,12 +9,10 @@ import {
 	deleteMessage,
 	getChat,
 	updateMessage,
+	getGlobalChatSettings,
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms";
-import {
-	DEFAULT_SYSTEM_PROMPT,
-	createConversationChain,
-} from "@/lib/ai";
+import { DEFAULT_SYSTEM_PROMPT, createConversationChain } from "@/lib/ai";
 
 export async function action({
 	context,
@@ -30,10 +28,19 @@ export async function action({
 			Intents.SendMessage,
 			sendMessageFormSchema,
 			async ({ prompt: formPrompt, message }) => {
-				let chat = chatId ? await getChat(context, user.id, chatId) : null;
+				const chatPromise = chatId ? getChat(context, user.id, chatId) : null;
+				const settingsPromise = getGlobalChatSettings(context, user.id);
+
+				let [chat, settings] = await Promise.all([
+					chatPromise,
+					settingsPromise,
+				]);
 
 				const prompt =
-					formPrompt || chat?.settings.prompt || DEFAULT_SYSTEM_PROMPT;
+					formPrompt ||
+					chat?.settings.prompt ||
+					settings?.prompt ||
+					DEFAULT_SYSTEM_PROMPT;
 
 				const history = chat?.messages.map<["ai" | "human", string]>(
 					({ message, sender }) => [sender ? "human" : "ai", message],

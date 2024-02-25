@@ -23,7 +23,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea, useAutoHeightTextArea } from "@/components/ui/textarea";
 import { Intents, useChatSettingsForm, useSendMessageForm } from "@/forms";
-import { DEFAULT_SYSTEM_PROMPT } from "@/lib/ai";
 import { cn } from "@/lib/styles";
 import type { RecursivePromise } from "@/routes/api.chat.($chatId)/client";
 
@@ -49,7 +48,7 @@ export function ChatTopBar({
 }: {
 	chatId: string | undefined;
 	chatName: string | undefined;
-	systemPrompt: string | undefined;
+	systemPrompt: string | null;
 }) {
 	const autoHeightTextArea = useAutoHeightTextArea();
 	const actionData = useActionData<typeof clientAction>();
@@ -109,7 +108,7 @@ export function ChatTopBar({
 								<Textarea
 									{...getTextareaProps(updateChatSettingsFields.prompt)}
 									{...autoHeightTextArea}
-									defaultValue={systemPrompt}
+									defaultValue={systemPrompt || ""}
 								/>
 								<div
 									id={updateChatSettingsFields.prompt.descriptionId}
@@ -222,11 +221,7 @@ export function ChatBottomBar({
 			className="p-2 flex justify-between w-full items-center gap-2"
 		>
 			<input type="hidden" name="intent" value={Intents.SendMessage} />
-			<input
-				type="hidden"
-				name="prompt"
-				value={prompt !== DEFAULT_SYSTEM_PROMPT ? prompt : ""}
-			/>
+			<input type="hidden" name="prompt" value={prompt} />
 
 			<div className="w-full relative space-y-2">
 				<Textarea
