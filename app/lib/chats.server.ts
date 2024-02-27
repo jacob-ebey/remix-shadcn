@@ -27,10 +27,16 @@ export async function createChat(
 	context: AppLoadContext,
 	userId: string,
 	{
+		agent,
 		message,
 		name: inputName,
 		prompt,
-	}: { message: string; name?: string | null; prompt?: string },
+	}: {
+		agent?: string | null;
+		message: string;
+		name?: string | null;
+		prompt?: string;
+	},
 ): Promise<Chat | null> {
 	const name = inputName || message.slice(36);
 
@@ -51,10 +57,11 @@ export async function createChat(
 		});
 		if (!newMessage.success) throw new Error("Could not create message");
 
-		if (prompt) {
+		if (prompt || agent) {
 			const newSettings = await context.DB.insert(chatSettings).values({
 				chatId: newChat.id,
-				prompt,
+				prompt: prompt || null,
+				agentId: agent || null,
 			});
 			if (!newSettings.success) throw new Error("Could not create settings");
 		}
@@ -121,7 +128,8 @@ export interface ChatMessage {
 }
 
 export interface ChatSettings {
-	prompt: string;
+	agentId?: string;
+	prompt?: string;
 }
 
 export interface Chat {
@@ -157,6 +165,7 @@ export async function getChat(
 				settings: {
 					columns: {
 						prompt: true,
+						agentId: true,
 					},
 				},
 			},
@@ -175,6 +184,7 @@ export async function getChat(
 		})),
 		settings: {
 			prompt: found.settings?.prompt || "You are a helpful AI assistant.",
+			agentId: found.settings?.agentId || undefined,
 		},
 	};
 }
@@ -183,7 +193,7 @@ export async function updateChatSettings(
 	{ DB }: AppLoadContext,
 	userId: string,
 	chatId: string,
-	{ prompt }: { prompt?: string },
+	{ agentId, prompt }: { agentId?: string; prompt?: string },
 ) {
 	const ownedChat = await DB.query.chat.findFirst({
 		where: and(eq(chat.id, chatId), eq(chat.userId, userId)),
@@ -196,13 +206,17 @@ export async function updateChatSettings(
 	const existingSettings = await DB.query.chatSettings.findFirst({
 		where: eq(chatSettings.chatId, chatId),
 		columns: {
+			agentId: true,
 			prompt: true,
 		},
 	});
 
 	if (existingSettings) {
 		const updated = await DB.update(chatSettings)
-			.set({ prompt: prompt || null })
+			.set({
+				agentId: agentId || null,
+				prompt: prompt || null,
+			})
 			.where(eq(chatSettings.chatId, chatId))
 			.returning({
 				prompt: chatSettings.prompt,
@@ -214,6 +228,7 @@ export async function updateChatSettings(
 	const inserted = await DB.insert(chatSettings)
 		.values({
 			chatId,
+			agentId: agentId || null,
 			prompt: prompt || null,
 		})
 		.returning({

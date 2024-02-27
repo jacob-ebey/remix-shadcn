@@ -1,4 +1,4 @@
-import { Intents } from "@/forms";
+import { Intents } from "@/intents";
 
 export async function sendMessage(
 	chatId: string | undefined,

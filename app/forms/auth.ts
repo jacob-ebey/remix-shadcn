@@ -1,10 +1,36 @@
-import { type SubmissionResult } from "@conform-to/react";
+import type { SubmissionResult } from "@conform-to/react";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 
+import { PASSWORD_MIN_LENGTH } from "@/config.shared";
 import { useForm } from "@/lib/forms";
 
-export const PASSWORD_MIN_LENGTH = 8;
+export const loginFormSchema = zfd.formData({
+	email: z
+		.string({ required_error: "Email is required" })
+		.trim()
+		.min(1, "Email is required")
+		.email("Invalid email"),
+	password: z.string({ required_error: "Password is required" }),
+});
+
+export function useLoginForm(
+	lastResult: unknown,
+	{ disabled }: { disabled?: boolean } = {},
+) {
+	return useForm(loginFormSchema, {
+		id: "login-form",
+		lastResult: lastResult as SubmissionResult<string[]> | null | undefined,
+		shouldRevalidate: "onBlur",
+		shouldValidate: "onSubmit",
+		onSubmit(event) {
+			if (disabled) {
+				event.preventDefault();
+				return;
+			}
+		},
+	});
+}
 
 export const signupFormSchema = zfd
 	.formData({

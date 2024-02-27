@@ -18,7 +18,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Intents } from "@/forms";
+import { Intents } from "@/intents";
 import type { ChatSummary } from "@/lib/chats.server";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
@@ -163,7 +163,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
 						variant="ghost"
 						className="justify-center @[150px]:justify-start gap-4 py-2 div h-auto min-w-0 w-full px-2 @[150px]:px-4 rounded-none"
 					>
-						<Link to="/settings">
+						<Link to="/agents">
 							<PersonIcon
 								className="min-w-6 min-h-6 w-6 h-6"
 								width={6}
