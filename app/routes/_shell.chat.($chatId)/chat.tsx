@@ -3,10 +3,15 @@ import {
 	GearIcon,
 	MagicWandIcon,
 	PaperPlaneIcon,
-	Pencil1Icon,
 	PersonIcon,
 } from "@radix-ui/react-icons";
-import { Link, useActionData, useFetcher } from "@remix-run/react";
+import {
+	useActionData,
+	useFetcher,
+	useLocation,
+	useNavigate,
+	useNavigation,
+} from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
 
@@ -21,8 +26,17 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea, useAutoHeightTextArea } from "@/components/ui/textarea";
-import { Intents, useChatSettingsForm, useSendMessageForm } from "@/forms";
+import { useChatSettingsForm, useSendMessageForm } from "@/forms/chat";
+import { Intents } from "@/intents";
 import { cn } from "@/lib/styles";
 import type { RecursivePromise } from "@/routes/api.chat.($chatId)/client";
 
@@ -42,16 +56,26 @@ export interface UserData {
 }
 
 export function ChatTopBar({
+	agents,
 	chatId,
 	chatName,
+	selectedAgentId,
 	systemPrompt,
 }: {
+	agents: { id: string; name: string }[];
 	chatId: string | undefined;
 	chatName: string | undefined;
+	selectedAgentId: string | undefined;
 	systemPrompt: string | null;
 }) {
 	const autoHeightTextArea = useAutoHeightTextArea();
 	const actionData = useActionData<typeof clientAction>();
+	const navigate = useNavigate();
+	const realLocation = useLocation();
+	const navigation = useNavigation();
+	const location = navigation.location?.pathname.match(/\/chat\/?/)
+		? navigation.location
+		: realLocation;
 	const saveSettingsFetcher = useFetcher({
 		key: `updated-chat-settings-${chatId || ""}`,
 	});
@@ -62,11 +86,12 @@ export function ChatTopBar({
 
 	const [updateChatSettingsForm, updateChatSettingsFields] =
 		useChatSettingsForm(actionData?.[Intents.UpdateChatSettings]?.lastResult, {
+			chatId,
 			disabled: savingSettings,
 		});
 
 	return (
-		<div className="w-full flex py-2 px-4 md:p-4 justify-between items-center border-b">
+		<div className="w-full flex py-2 gap-4 px-4 md:p-4 justify-between items-center border-b">
 			<div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0">
 				{chatId && <MagicWandIcon className="h-4 w-4" />}
 				<div className="flex-1 min-w-0">
@@ -77,60 +102,99 @@ export function ChatTopBar({
 				</div>
 			</div>
 
-			<div className="flex gap-2">
-				<Dialog>
-					<DialogTrigger asChild>
-						<Button type="button" size="icon" variant="ghost">
-							<span className="sr-only">Chat settings</span>
-							<GearIcon className="w-6 h-6" />
-						</Button>
-					</DialogTrigger>
-					<DialogContent className="sm:max-w-[425px]">
-						<DialogHeader>
-							<DialogTitle>Chat settings</DialogTitle>
-							<DialogDescription>
-								Make changes that apply to only this chat.
-							</DialogDescription>
-						</DialogHeader>
-						<saveSettingsFetcher.Form
-							{...getFormProps(updateChatSettingsForm)}
-							method="POST"
-						>
-							<input
-								type="hidden"
-								name="intent"
-								value={Intents.UpdateChatSettings}
-							/>
-							<div className="space-y-2">
-								<Label htmlFor={updateChatSettingsFields.prompt.id}>
-									System Prompt
-								</Label>
-								<Textarea
-									{...getTextareaProps(updateChatSettingsFields.prompt)}
-									{...autoHeightTextArea}
-									defaultValue={systemPrompt || ""}
-								/>
-								<div
-									id={updateChatSettingsFields.prompt.descriptionId}
-									className="text-sm text-destructive"
-								>
-									{updateChatSettingsFields.prompt.errors ||
-										updateChatSettingsFields.global.errors}
-								</div>
-							</div>
-						</saveSettingsFetcher.Form>
-						<DialogFooter>
-							<Button
-								form={updateChatSettingsForm.id}
-								type="submit"
-								disabled={savingSettings}
-							>
-								Save changes
+			{(!chatId || selectedAgentId) && agents.length > 0 && (
+				<Select
+					key={selectedAgentId}
+					name={updateChatSettingsFields.agentId.name}
+					defaultValue={selectedAgentId || " "}
+					disabled={!!chatId}
+					onValueChange={(value) => {
+						const newAgent = value.trim();
+						if (location.pathname.match(/\/chat\/?/)) {
+							const search = new URLSearchParams(location.search);
+							if (newAgent) search.set("agent", value);
+							else search.delete("agent");
+							const newSearch = search.toString();
+							navigate(
+								`${location.pathname}${newSearch ? `?${newSearch}` : ""}`,
+							);
+						} else {
+							throw new Error("Can't change agent for existing chat.");
+						}
+					}}
+				>
+					<SelectTrigger className="w-[180px]">
+						<SelectValue placeholder="Select an agent" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectGroup>
+							{[{ id: " ", name: "None" }, ...agents].map((agent) => (
+								<SelectItem key={agent.id} value={agent.id}>
+									{agent.name}
+								</SelectItem>
+							))}
+						</SelectGroup>
+					</SelectContent>
+				</Select>
+			)}
+
+			{!selectedAgentId && (
+				<div className="flex gap-2">
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button type="button" size="icon" variant="ghost">
+								<span className="sr-only">Chat settings</span>
+								<GearIcon className="w-6 h-6" />
 							</Button>
-						</DialogFooter>
-					</DialogContent>
-				</Dialog>
-			</div>
+						</DialogTrigger>
+						<DialogContent className="sm:max-w-[425px]">
+							<DialogHeader>
+								<DialogTitle>Chat settings</DialogTitle>
+								<DialogDescription>
+									Make changes that apply to only this chat.
+								</DialogDescription>
+							</DialogHeader>
+							<saveSettingsFetcher.Form
+								{...getFormProps(updateChatSettingsForm)}
+								method="POST"
+							>
+								<input
+									type="hidden"
+									name="intent"
+									value={Intents.UpdateChatSettings}
+								/>
+								<div className="space-y-2">
+									<Label htmlFor={updateChatSettingsFields.prompt.id}>
+										System Prompt
+									</Label>
+									<Textarea
+										{...getTextareaProps(updateChatSettingsFields.prompt)}
+										{...autoHeightTextArea}
+										key={updateChatSettingsFields.prompt.key}
+										defaultValue={systemPrompt || ""}
+									/>
+									<div
+										id={updateChatSettingsFields.prompt.descriptionId}
+										className="text-sm text-destructive"
+									>
+										{updateChatSettingsFields.prompt.errors ||
+											updateChatSettingsFields.global.errors}
+									</div>
+								</div>
+							</saveSettingsFetcher.Form>
+							<DialogFooter>
+								<Button
+									form={updateChatSettingsForm.id}
+									type="submit"
+									disabled={savingSettings}
+								>
+									Save changes
+								</Button>
+							</DialogFooter>
+						</DialogContent>
+					</Dialog>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -188,9 +252,14 @@ export function ChatMessage({
 }
 
 export function ChatBottomBar({
+	agentId,
 	chatId,
 	prompt,
-}: { chatId: string | undefined; prompt: string | undefined }) {
+}: {
+	agentId: string | null | undefined;
+	chatId: string | undefined;
+	prompt: string | null | undefined;
+}) {
 	const actionData = useActionData<typeof clientAction>();
 	const fetcher = useFetcher({ key: "send-message" });
 
@@ -221,7 +290,16 @@ export function ChatBottomBar({
 			className="p-2 flex justify-between w-full items-center gap-2"
 		>
 			<input type="hidden" name="intent" value={Intents.SendMessage} />
-			<input type="hidden" name="prompt" value={prompt} />
+			<input
+				type="hidden"
+				name={sendMessageFields.prompt.name}
+				value={prompt || ""}
+			/>
+			<input
+				type="hidden"
+				name={sendMessageFields.agent.name}
+				value={agentId || ""}
+			/>
 
 			<div className="w-full relative space-y-2">
 				<Textarea

@@ -1,18 +1,20 @@
 import type { BaseMessageChunk } from "@langchain/core/messages";
 import type { ActionFunctionArgs } from "@remix-run/cloudflare";
 
-import { Intents, sendMessageFormSchema } from "@/forms";
+import { DEFAULT_SYSTEM_PROMPT } from "@/config.shared";
+import { sendMessageFormSchema } from "@/forms/chat";
+import { Intents } from "@/intents";
+import { createConversationChain } from "@/lib/ai";
 import { requireUser } from "@/lib/auth.server";
 import {
 	addMessage,
 	createChat,
 	deleteMessage,
 	getChat,
-	updateMessage,
 	getGlobalChatSettings,
+	updateMessage,
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms";
-import { DEFAULT_SYSTEM_PROMPT, createConversationChain } from "@/lib/ai";
 
 export async function action({
 	context,
@@ -27,7 +29,7 @@ export async function action({
 		.intent(
 			Intents.SendMessage,
 			sendMessageFormSchema,
-			async ({ prompt: formPrompt, message }) => {
+			async ({ agent: formAgent, prompt: formPrompt, message }) => {
 				const chatPromise = chatId ? getChat(context, user.id, chatId) : null;
 				const settingsPromise = getGlobalChatSettings(context, user.id);
 
@@ -35,6 +37,8 @@ export async function action({
 					chatPromise,
 					settingsPromise,
 				]);
+
+				const agent = chat?.settings.agentId || formAgent;
 
 				const prompt =
 					formPrompt ||
@@ -49,6 +53,7 @@ export async function action({
 				let sentMessageId: string | undefined;
 				if (!chat) {
 					chat = await createChat(context, user.id, {
+						agent,
 						message: message,
 						name: message.slice(0, 36) + (message.length > 36 ? "..." : ""),
 						prompt: formPrompt,
@@ -69,13 +74,16 @@ export async function action({
 					);
 				}
 
-				const conversation = createConversationChain(
+				const conversation = await createConversationChain(
 					context,
+					user.id,
 					prompt,
+					agent,
 					history ?? [],
+					request.signal,
 				);
 
-				const aiResponse = await conversation.stream({ question: message });
+				const aiResponse = await conversation.stream({ prompt: message });
 
 				const chatIdToModify = chat.id;
 				let aiMessage = "";

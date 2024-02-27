@@ -9,26 +9,29 @@ import {
 	useLoaderData,
 	useNavigate,
 	useRevalidator,
+	useSearchParams,
 } from "@remix-run/react";
 import * as React from "react";
 import { z } from "zod";
 
+import { DEFAULT_SYSTEM_PROMPT } from "@/config.shared";
 import {
-	Intents,
 	sendMessageFormSchema,
 	updateChatSettingsFormSchema,
-} from "@/forms";
-import { DEFAULT_SYSTEM_PROMPT, createConversationChain } from "@/lib/ai";
+} from "@/forms/chat";
+import { Intents } from "@/intents";
+import { getAgents } from "@/lib/agents.server";
+import { createConversationChain } from "@/lib/ai";
 import { requireUser } from "@/lib/auth.server";
 import {
+	type ChatMessage as Message,
 	ChatSettings,
 	addMessage,
 	clearChats,
 	createChat,
 	getChat,
-	updateChatSettings,
-	type ChatMessage as Message,
 	getGlobalChatSettings,
+	updateChatSettings,
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms";
 import { sendMessage } from "@/routes/api.chat.($chatId)/client";
@@ -48,12 +51,21 @@ export async function loader({
 }: LoaderFunctionArgs) {
 	const user = await requireUser(context, request);
 
+	const agentsPromise = getAgents(context, user.id);
 	const chatPromise = chatId ? getChat(context, user.id, chatId) : null;
 	const settingsPromise = getGlobalChatSettings(context, user.id);
 
-	const [chat, settings] = await Promise.all([chatPromise, settingsPromise]);
+	const [agents, chat, settings] = await Promise.all([
+		agentsPromise,
+		chatPromise,
+		settingsPromise,
+	]);
 
-	return { chat, defaultPrompt: chat?.settings.prompt || settings?.prompt };
+	return {
+		agents,
+		chat,
+		defaultPrompt: chat?.settings.prompt || settings?.prompt,
+	};
 }
 
 export async function action({
@@ -72,15 +84,18 @@ export async function action({
 		.intent(
 			Intents.UpdateChatSettings,
 			updateChatSettingsFormSchema,
-			async ({ prompt }) => {
+			async ({ agentId, prompt }) => {
 				if (!chatId) throw new Error("Chat ID is required");
-				return await updateChatSettings(context, user.id, chatId, { prompt });
+				return await updateChatSettings(context, user.id, chatId, {
+					agentId,
+					prompt,
+				});
 			},
 		)
 		.intent(
 			Intents.SendMessage,
 			sendMessageFormSchema,
-			async ({ prompt: formPrompt, message }) => {
+			async ({ agent: formAgent, prompt: formPrompt, message }) => {
 				const chatPromise = chatId ? getChat(context, user.id, chatId) : null;
 				const settingsPromise = getGlobalChatSettings(context, user.id);
 
@@ -88,6 +103,8 @@ export async function action({
 					chatPromise,
 					settingsPromise,
 				]);
+
+				const agent = chat?.settings.agentId || formAgent;
 
 				const prompt =
 					formPrompt ||
@@ -99,16 +116,20 @@ export async function action({
 					({ message, sender }) => [sender ? "human" : "ai", message],
 				);
 
-				const conversation = createConversationChain(
+				const conversation = await createConversationChain(
 					context,
+					user.id,
 					prompt,
+					agent,
 					history ?? [],
+					request.signal,
 				);
-				const aiResponse = await conversation.invoke({ question: message });
+				const aiResponse = await conversation.invoke({ prompt: message });
 				const aiMessage = aiResponse.content.toString().trim();
 
 				if (!chat) {
 					chat = await createChat(context, user.id, {
+						agent,
 						message: message,
 						name: message.slice(0, 36) + (message.length > 36 ? "..." : ""),
 						prompt: formPrompt,
@@ -162,8 +183,8 @@ export async function clientAction({
 }
 
 export default function Chat() {
-	const { chat, defaultPrompt } = useLoaderData<typeof loader>();
-	const messagesRef = React.useRef<HTMLDivElement>(null);
+	const { agents, chat, defaultPrompt } = useLoaderData<typeof loader>();
+	const [searchParams] = useSearchParams();
 
 	const messages = usePendingMessages(chat?.id, chat?.messages || []);
 	const updatedSettingsFetcher = useFetcher<typeof clientAction>({
@@ -175,6 +196,7 @@ export default function Chat() {
 				?.lastReturn as ChatSettings
 		)?.prompt || defaultPrompt;
 
+	const messagesRef = React.useRef<HTMLDivElement>(null);
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	React.useEffect(() => {
 		if (messagesRef.current) {
@@ -185,6 +207,10 @@ export default function Chat() {
 	return (
 		<div className="flex flex-col justify-between w-full h-full min-w-[84vw] sm:min-w-fit">
 			<ChatTopBar
+				selectedAgentId={
+					chat?.settings?.agentId || searchParams.get("agent") || ""
+				}
+				agents={agents}
 				chatId={chat?.id}
 				chatName={chat?.name}
 				systemPrompt={prompt}
@@ -220,7 +246,11 @@ export default function Chat() {
 						)}
 					</AnimatedMessages>
 				</div>
-				<ChatBottomBar chatId={chat?.id} prompt={prompt} />
+				<ChatBottomBar
+					agentId={!chat ? searchParams.get("agent") : chat.settings.agentId}
+					chatId={chat?.id}
+					prompt={prompt}
+				/>
 			</div>
 		</div>
 	);
@@ -277,7 +307,6 @@ function usePendingMessages(
 	}
 
 	if (chatId && data && data.chatId !== chatId) {
-		console.log("WTF", data, chatId);
 		return pendingMessages;
 	}
 

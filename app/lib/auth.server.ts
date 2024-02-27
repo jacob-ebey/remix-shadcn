@@ -3,7 +3,7 @@ import { Authenticator } from "remix-auth";
 import { FormStrategy } from "remix-auth-form";
 
 import { DEFAULT_FAILURE_REDIRECT } from "@/config.shared";
-import { loginFormSchema } from "@/forms";
+import { loginFormSchema } from "@/forms/auth";
 import type { AuthorizedUser } from "@/lib/auth";
 import { PublicError } from "@/lib/forms";
 import { getCookieSessionStorage } from "@/lib/session.server";

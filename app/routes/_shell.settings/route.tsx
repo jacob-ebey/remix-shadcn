@@ -16,10 +16,6 @@ import {
 	useNavigation,
 } from "@remix-run/react";
 
-import {
-	getGlobalChatSettings,
-	updateGlobalChatSettings,
-} from "@/lib/chats.server";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -31,19 +27,22 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { title } from "@/config.shared";
+import { Textarea, useAutoHeightTextArea } from "@/components/ui/textarea";
+import { DEFAULT_SYSTEM_PROMPT, title } from "@/config.shared";
 import {
-	Intents,
 	updateAccountFormSchema,
 	updateGlobalPromptFormSchema,
 	useGlobalPromptForm,
 	useUpdateAccountForm,
-} from "@/forms";
+} from "@/forms/account";
+import { Intents } from "@/intents";
 import { requireUser } from "@/lib/auth.server";
+import {
+	getGlobalChatSettings,
+	updateGlobalChatSettings,
+} from "@/lib/chats.server";
 import { formIntent } from "@/lib/forms";
 import { getUserById, updateUser } from "@/lib/user.server";
-import { Textarea, useAutoHeightTextArea } from "@/components/ui/textarea";
-import { DEFAULT_SYSTEM_PROMPT } from "@/lib/ai";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -116,7 +115,51 @@ export default function Account() {
 	const autoHeightTextArea = useAutoHeightTextArea();
 
 	return (
-		<main className="container py-8 md:py-16 lg:py-32 space-y-8">
+		<main className="container py-8 space-y-8">
+			<Form {...getFormProps(globalPromptForm)} method="POST" replace>
+				<input type="hidden" name="intent" value={Intents.UpdateGlobalPrompt} />
+
+				<Card className="w-full max-w-screen-sm mx-auto">
+					<CardHeader className="space-y-1">
+						<CardTitle>System Prompt</CardTitle>
+						<CardDescription>Edit your system prompt below.</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<Label htmlFor={globalPromptFields.prompt.id}>System Prompt</Label>
+						<Textarea
+							{...getTextareaProps(globalPromptFields.prompt)}
+							{...autoHeightTextArea}
+							defaultValue={chatSettings?.prompt || DEFAULT_SYSTEM_PROMPT}
+						/>
+						<div
+							id={globalPromptFields.prompt.descriptionId}
+							className="text-sm text-destructive"
+						>
+							{globalPromptFields.prompt.errors ||
+								globalPromptFields.global.errors}
+						</div>
+					</CardContent>
+					<CardFooter>
+						<div className="space-y-2 flex-1">
+							<Button
+								className="w-full block"
+								type="submit"
+								disabled={formDisabled}
+							>
+								{saving ? (
+									<span className="inline-flex items-center">
+										Saving{" "}
+										<ArchiveIcon className="text-primary-foreground ml-2 w-6 h-6" />
+									</span>
+								) : (
+									"Save"
+								)}
+							</Button>
+						</div>
+					</CardFooter>
+				</Card>
+			</Form>
+
 			<Form {...getFormProps(accountForm)} method="POST" replace>
 				<input type="hidden" name="intent" value={Intents.UpdateAccount} />
 
@@ -169,50 +212,6 @@ export default function Account() {
 								defaultValue={account?.email}
 								disabled
 							/>
-						</div>
-					</CardContent>
-					<CardFooter>
-						<div className="space-y-2 flex-1">
-							<Button
-								className="w-full block"
-								type="submit"
-								disabled={formDisabled}
-							>
-								{saving ? (
-									<span className="inline-flex items-center">
-										Saving{" "}
-										<ArchiveIcon className="text-primary-foreground ml-2 w-6 h-6" />
-									</span>
-								) : (
-									"Save"
-								)}
-							</Button>
-						</div>
-					</CardFooter>
-				</Card>
-			</Form>
-
-			<Form {...getFormProps(globalPromptForm)} method="POST" replace>
-				<input type="hidden" name="intent" value={Intents.UpdateGlobalPrompt} />
-
-				<Card className="w-full max-w-screen-sm mx-auto">
-					<CardHeader className="space-y-1">
-						<CardTitle>System Prompt</CardTitle>
-						<CardDescription>Edit your system prompt below.</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<Label htmlFor={globalPromptFields.prompt.id}>System Prompt</Label>
-						<Textarea
-							{...getTextareaProps(globalPromptFields.prompt)}
-							{...autoHeightTextArea}
-							defaultValue={chatSettings?.prompt || DEFAULT_SYSTEM_PROMPT}
-						/>
-						<div
-							id={globalPromptFields.prompt.descriptionId}
-							className="text-sm text-destructive"
-						>
-							{globalPromptFields.prompt.errors ||
-								globalPromptFields.global.errors}
 						</div>
 					</CardContent>
 					<CardFooter>

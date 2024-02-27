@@ -20,6 +20,8 @@ export function getLoadContext(env: Env): AppLoadContext {
 			// model: "@cf/meta/llama-2-7b-chat-fp16",
 			// model: "@hf/thebloke/llama-2-13b-chat-awq",
 			model: "@hf/thebloke/neural-chat-7b-v3-1-awq",
+			// model: "@hf/thebloke/openhermes-2.5-mistral-7b-awq",
+			// maxRetries: 0,
 		}),
 		DB: drizzle(env.DB, { schema }),
 		SESSION_SECRET: env.SESSION_SECRET,

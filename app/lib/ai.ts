@@ -1,85 +1,138 @@
-import type { BaseMessageChunk } from "@langchain/core/messages";
-import { AIMessage, HumanMessage } from "@langchain/core/messages";
+import {
+	AIMessage,
+	BaseMessageChunk,
+	HumanMessage,
+} from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import {
+	BaseMessagePromptTemplateLike,
 	ChatPromptTemplate,
 	MessagesPlaceholder,
 } from "@langchain/core/prompts";
+import type { RunnableBinding, RunnableLike } from "@langchain/core/runnables";
 import { RunnableBranch, RunnableSequence } from "@langchain/core/runnables";
 import type { AppLoadContext } from "@remix-run/cloudflare";
 
-export const DEFAULT_SYSTEM_PROMPT =
-	"You are a helpful AI assistant targeted at industry professionals to aid in their research and analysis.";
+import { getAgent } from "@/lib/agents.server";
+import { PublicError } from "@/lib/forms";
 
-const CONDENSE_QUESTION_SYSTEM_TEMPLATE = `You are an experienced researcher, expert at interpreting and answering questions based on provided sources.
-Your job is to remove references to chat history from incoming questions, rephrasing them as standalone questions.`;
-
-const CONDENSE_QUESTION_HUMAN_TEMPLATE = `Using only previous conversation as context, rephrase the following question to be a standalone question.
-
-Do not respond with anything other than a rephrased standalone question. Be concise, but complete and resolve all references to the chat history.
-
-<question>
-  {question}
-</question>`;
-
-const condenseQuestionPrompt = ChatPromptTemplate.fromMessages([
-	["system", CONDENSE_QUESTION_SYSTEM_TEMPLATE],
-	new MessagesPlaceholder("chat_history"),
-	["human", CONDENSE_QUESTION_HUMAN_TEMPLATE],
-]);
-
-export function createConversationChain(
+export async function createConversationChain(
 	context: AppLoadContext,
+	userId: string,
 	systemPrompt: string,
+	agentId: string | undefined,
 	history: ["ai" | "human", string][],
-) {
-	const chat_history = formatChatHistory(history);
+	signal: AbortSignal,
+): Promise<RunnableBinding<{ prompt: string }, BaseMessageChunk>> {
+	type RunnableInput = Record<string, string> & { prompt: string };
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	type RunnableOutput = any;
 
-	const standaloneQuestionChain = RunnableSequence.from([
-		{
-			question: (input) => input.question,
-			chat_history: (input) => chat_history,
-		},
-		condenseQuestionPrompt,
-		context.AI,
-		new StringOutputParser(),
-	]).withConfig({ runName: "RephraseQuestionChain" });
-
-	const answerPrompt = ChatPromptTemplate.fromMessages([
-		["system", systemPrompt],
-		// Adding chat history as part of the final answer generation is distracting for a small model like Llama 2-7B.
-		// If using a more powerful model, you can re-enable to better support meta-questions about the conversation.
-		new MessagesPlaceholder("chat_history"),
-		["human", "{standalone_question}"],
-	]);
-
-	const answerChain = RunnableSequence.from([
-		{
-			standalone_question: (input) => input.standalone_question,
-			chat_history: (input) => chat_history,
-		},
-		answerPrompt,
-		context.AI,
-	]).withConfig({ runName: "AnswerGenerationChain" });
-
-	return RunnableSequence.from<{ question: string }, BaseMessageChunk>([
-		{
-			// standalone_question: RunnableBranch.from([
-			// 	[(input) => chat_history.length > 0, standaloneQuestionChain],
-			// 	(input) => input.question,
-			// ]),
-			standalone_question: (input) => input.question,
-			chat_history: (input) => chat_history,
-		},
-		answerChain,
-	]).withConfig({ runName: "ConversationalRetrievalChain" });
-}
-
-function formatChatHistory(chatHistory: ["ai" | "human", string][]) {
-	return chatHistory.map((message) => {
+	const chat_history = history.map((message) => {
 		if (message[0] === "ai") {
 			return new AIMessage({ content: message[1] });
 		}
 		return new HumanMessage({ content: message[1] });
+	});
+
+	if (!agentId) {
+		return RunnableSequence.from<RunnableInput>([
+			{
+				_empty: () => "",
+				prompt: (input) => input.prompt,
+				chat_history: () => chat_history,
+			},
+			ChatPromptTemplate.fromMessages([
+				["system", systemPrompt],
+				new MessagesPlaceholder("chat_history"),
+				["human", "{prompt}"],
+			]),
+			context.AI.bind({ signal }),
+		]).withConfig({ runName: "DefaultConversationChain" });
+	}
+
+	const agent = await getAgent(context, userId, agentId);
+	if (!agent) {
+		throw new PublicError("Agent not found");
+	}
+
+	const inputs = agent.steps.reduce(
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		(inputs: any, step) => {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			inputs[step.name] = (input: any) => input[step.name] || "";
+			return inputs;
+		},
+		{
+			_empty: () => "",
+			prompt: (input) => input.prompt,
+			chat_history: (input) => chat_history,
+		} as RunnableLike<RunnableInput, RunnableOutput>,
+	) as RunnableLike<RunnableInput, RunnableOutput>;
+
+	const sequences: RunnableLike<RunnableInput, RunnableOutput>[] = [];
+	for (const step of agent.steps.slice(0, -1)) {
+		const messages: // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		(ChatPromptTemplate<any, string> | BaseMessagePromptTemplateLike)[] = [
+			["system", step.systemTemplate],
+		];
+		if (step.includeChatHistory) {
+			messages.push(new MessagesPlaceholder("chat_history"));
+		}
+		messages.push(["human", step.messageTemplate]);
+		const template = ChatPromptTemplate.fromMessages(messages);
+
+		sequences.push({
+			...inputs,
+			[step.name]: RunnableBranch.from<RunnableInput, RunnableOutput>([
+				[
+					(inputs) => {
+						if (step.onlyIfPreviousMessages && !history.length) {
+							return false;
+						}
+						for (const condition of step.conditions || []) {
+							if (!condition.variable || !inputs[condition.variable]) {
+								return false;
+							}
+							if (condition.regex) {
+								const regex = new RegExp(condition.regex, "i");
+								if (!regex.test(inputs[condition.variable])) return false;
+							}
+						}
+						return true;
+					},
+					RunnableSequence.from([
+						inputs,
+						template,
+						context.AI.bind({ signal }),
+						new StringOutputParser(),
+					]).withConfig({
+						runName: `Agent-${agent.name}-Step-${step.name}`,
+					}),
+				],
+				(inputs) => inputs._empty,
+			]),
+		});
+	}
+
+	const lastStep = agent.steps.slice(-1)[0];
+	const messages: // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	(ChatPromptTemplate<any, string> | BaseMessagePromptTemplateLike)[] = [
+		["system", lastStep.systemTemplate],
+	];
+	if (lastStep.includeChatHistory) {
+		messages.push(new MessagesPlaceholder("chat_history"));
+	}
+	messages.push(["human", lastStep.messageTemplate]);
+	const template = ChatPromptTemplate.fromMessages(messages);
+
+	return RunnableSequence.from([
+		inputs,
+		...[...sequences.map((sequence) => [inputs, sequence])].flat(),
+		inputs,
+		template,
+		context.AI.bind({ signal }),
+	]).withConfig({
+		runName: `Agent-${agent.name}-Step-${lastStep.name}`,
 	});
 }

@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuid } from "uuid";
 
 const stringId = (name: string) =>
@@ -16,7 +16,7 @@ const createdAt = () =>
 
 export const password = sqliteTable("password", {
 	id: stringId("id"),
-	userId: text("userId")
+	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	password: text("password").notNull(),
@@ -34,7 +34,7 @@ export const chat = sqliteTable("chat", {
 	id: stringId("id"),
 	name: text("name").notNull(),
 	createdAt: createdAt(),
-	userId: text("userId")
+	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 });
@@ -51,10 +51,10 @@ export const chatMessage = sqliteTable("chat_message", {
 	id: stringId("id"),
 	message: text("message").notNull(),
 	createdAt: createdAt(),
-	chatId: text("chatId")
+	chatId: text("chat_id")
 		.notNull()
 		.references(() => chat.id, { onDelete: "cascade" }),
-	userId: text("userId").references(() => user.id),
+	userId: text("user_id").references(() => user.id),
 });
 
 const chatMessageRelations = relations(chatMessage, ({ one }) => ({
@@ -71,19 +71,23 @@ const chatMessageRelations = relations(chatMessage, ({ one }) => ({
 export const globalChatSettings = sqliteTable("global_chat_settings", {
 	id: stringId("id"),
 	prompt: text("prompt"),
-	userId: text("userId").references(() => user.id, { onDelete: "cascade" }),
+	userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
 });
 
 export const chatSettings = sqliteTable("chat_settings", {
 	id: stringId("id"),
-	chatId: text("chatId")
+	agentId: text("agent_id").references(() => agent.id, {
+		onDelete: "set null",
+	}),
+	chatId: text("chat_id")
 		.notNull()
 		.references(() => chat.id, { onDelete: "cascade" }),
 	prompt: text("prompt"),
 });
 
-const agent = sqliteTable("agent", {
+export const agent = sqliteTable("agent", {
 	id: stringId("id"),
+	name: text("name").notNull(),
 	visibility: text("visibility", { enum: ["private", "public"] }).default(
 		"private",
 	),
@@ -93,24 +97,82 @@ const agent = sqliteTable("agent", {
 		.references(() => user.id, { onDelete: "cascade" }),
 });
 
-const agentStep = sqliteTable("agent_step", {
+const agentRelations = relations(agent, ({ many, one }) => ({
+	steps: many(agentStep),
+	createdBy: one(user),
+}));
+
+export const agentStep = sqliteTable("agent_step", {
 	id: stringId("id"),
+	name: text("name").notNull(),
+	includeChatHistory: integer("include_chat_history", {
+		mode: "boolean",
+	}).default(false),
+	onlyIfPreviousMessages: integer("only_if_previous_messages", {
+		mode: "boolean",
+	}).default(false),
 	systemTemplate: text("system_template").notNull(),
 	messageTemplate: text("message_template").notNull(),
-	createdAt: createdAt(),
-	agentId: text("agentId")
+	order: integer("order").notNull(),
+	agentId: text("agent_id")
 		.notNull()
 		.references(() => agent.id, { onDelete: "cascade" }),
 });
 
-const agentRelations = relations(agent, ({ many }) => ({
-	steps: many(agentStep),
+const agentStepRelations = relations(agentStep, ({ one, many }) => ({
+	agent: one(agent, {
+		fields: [agentStep.agentId],
+		references: [agent.id],
+	}),
+	conditions: many(agentStepCondition),
+	messages: many(agentStepMessage),
 }));
+
+export const agentStepMessage = sqliteTable("agent_step_message", {
+	id: stringId("id"),
+	from: text("from", { enum: ["ai", "human"] }).notNull(),
+	content: text("message").notNull(),
+	order: integer("order").notNull(),
+	agentStepId: text("agent_step_id")
+		.notNull()
+		.references(() => agentStep.id, { onDelete: "cascade" }),
+});
+
+const agentStepMessageRelations = relations(agentStepMessage, ({ one }) => ({
+	agentStep: one(agentStep, {
+		fields: [agentStepMessage.agentStepId],
+		references: [agentStep.id],
+	}),
+}));
+
+export const agentStepCondition = sqliteTable("agent_step_condition", {
+	id: stringId("id"),
+	variable: text("variable"),
+	regex: text("regex"),
+	agentStepId: text("agent_step_id")
+		.notNull()
+		.references(() => agentStep.id, { onDelete: "cascade" }),
+});
+
+const agentStepConditionRelations = relations(
+	agentStepCondition,
+	({ one }) => ({
+		agentStep: one(agentStep, {
+			fields: [agentStepCondition.agentStepId],
+			references: [agentStep.id],
+		}),
+	}),
+);
 
 const schema = {
 	agent,
 	agentRelations,
 	agentStep,
+	agentStepRelations,
+	agentStepCondition,
+	agentStepConditionRelations,
+	agentStepMessage,
+	agentStepMessageRelations,
 	chat,
 	chatMessage,
 	chatMessageRelations,
