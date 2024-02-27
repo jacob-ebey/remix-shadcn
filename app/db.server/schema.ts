@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuid } from "uuid";
 
 const stringId = (name: string) =>

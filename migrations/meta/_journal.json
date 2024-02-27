@@ -1,13 +1,13 @@
 {
-  "version": "5",
-  "dialect": "sqlite",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1708973572124,
-      "tag": "0000_steady_human_torch",
-      "breakpoints": true
-    }
-  ]
+	"version": "5",
+	"dialect": "sqlite",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "5",
+			"when": 1708973572124,
+			"tag": "0000_steady_human_torch",
+			"breakpoints": true
+		}
+	]
 }

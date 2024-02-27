@@ -13,6 +13,7 @@ import {
 	useConfirmationDialog,
 } from "@/components/confirmation-dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
 	Tooltip,
 	TooltipContent,
@@ -20,7 +21,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Intents } from "@/intents";
 import type { ChatSummary } from "@/lib/chats.server";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
 interface SidebarProps {
 	chats: ChatSummary[];

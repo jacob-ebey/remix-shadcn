@@ -24,6 +24,7 @@ import { getAgents } from "@/lib/agents.server";
 import { createConversationChain } from "@/lib/ai";
 import { requireUser } from "@/lib/auth.server";
 import {
+	type ChatMessage as Message,
 	ChatSettings,
 	addMessage,
 	clearChats,
@@ -31,7 +32,6 @@ import {
 	getChat,
 	getGlobalChatSettings,
 	updateChatSettings,
-	type ChatMessage as Message,
 } from "@/lib/chats.server";
 import { PublicError, formIntent } from "@/lib/forms";
 import { sendMessage } from "@/routes/api.chat.($chatId)/client";
